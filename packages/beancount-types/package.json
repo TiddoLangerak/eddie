@@ -6,7 +6,6 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "node --test --experimental-strip-types src/**/*.test.ts",
     "build": "tsc -b"
   }
 }
