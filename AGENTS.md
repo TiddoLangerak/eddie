@@ -6,6 +6,7 @@
 - **Prefer functional-style iteration** over vanilla `for` loops: use `.map()`, `.filter()`, `.reduce()`, `.find()`, `.some()`, `.every()` etc. where it improves readability.
 - **Write tests** for new and changed behavior. Co-locate or mirror test layout (e.g. `*.test.ts` / `*.spec.ts` next to source or under `__tests__`).
 - **Dependencies:** Prefer minimal dependencies; use the standard library where it's enough; when adding a dependency, note why it's needed (e.g. in a comment or PR).
+- **Format using Biome:** Run `npm run format` to format code.
 
 ---
 
