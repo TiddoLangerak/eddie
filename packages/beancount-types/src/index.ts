@@ -2,9 +2,18 @@
  * Core types for Beancount file structure
  */
 
+export interface FormattingInfo {
+  commentsBefore?: string[];
+  commentsAfter?: string[];
+  commentsInline?: string[];
+  blankLinesBefore?: number;
+}
+
 export interface BeancountFile {
   directives: Directive[];
   metadata?: Record<string, unknown>;
+  headerComments?: string[];
+  footerComments?: string[];
 }
 
 export type Directive =
@@ -31,6 +40,7 @@ export interface Transaction {
   links?: string[];
   postings: Posting[];
   metadata?: Record<string, unknown>;
+  formatting?: FormattingInfo;
 }
 
 export interface Posting {
@@ -39,6 +49,7 @@ export interface Posting {
   cost?: Amount;
   price?: Amount;
   metadata?: Record<string, unknown>;
+  formatting?: FormattingInfo;
 }
 
 export interface Amount {
@@ -51,6 +62,7 @@ export interface Balance {
   date: string;
   account: string;
   amount: Amount;
+  formatting?: FormattingInfo;
 }
 
 export interface Open {
@@ -59,18 +71,21 @@ export interface Open {
   account: string;
   currencies?: string[];
   booking?: string;
+  formatting?: FormattingInfo;
 }
 
 export interface Close {
   type: "close";
   date: string;
   account: string;
+  formatting?: FormattingInfo;
 }
 
 export interface Commodity {
   type: "commodity";
   date: string;
   currency: string;
+  formatting?: FormattingInfo;
 }
 
 export interface Pad {
@@ -78,6 +93,7 @@ export interface Pad {
   date: string;
   account: string;
   sourceAccount: string;
+  formatting?: FormattingInfo;
 }
 
 export interface Note {
@@ -85,6 +101,7 @@ export interface Note {
   date: string;
   account: string;
   comment: string;
+  formatting?: FormattingInfo;
 }
 
 export interface Document {
@@ -92,6 +109,7 @@ export interface Document {
   date: string;
   account: string;
   filename: string;
+  formatting?: FormattingInfo;
 }
 
 export interface Price {
@@ -99,6 +117,7 @@ export interface Price {
   date: string;
   currency: string;
   amount: Amount;
+  formatting?: FormattingInfo;
 }
 
 export interface Event {
@@ -106,6 +125,7 @@ export interface Event {
   date: string;
   eventType: string;
   description: string;
+  formatting?: FormattingInfo;
 }
 
 export interface Query {
@@ -113,6 +133,7 @@ export interface Query {
   date: string;
   name: string;
   queryString: string;
+  formatting?: FormattingInfo;
 }
 
 export interface Custom {
@@ -120,4 +141,5 @@ export interface Custom {
   date: string;
   customType: string;
   values: unknown[];
+  formatting?: FormattingInfo;
 }
