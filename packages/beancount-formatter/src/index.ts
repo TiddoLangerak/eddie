@@ -1,9 +1,9 @@
 import type {
+  Amount,
   BeancountFile,
   Directive,
-  Transaction,
   Posting,
-  Amount,
+  Transaction,
 } from "@Tiddo/beancount-types";
 
 /**

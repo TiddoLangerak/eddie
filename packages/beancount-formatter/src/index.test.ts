@@ -1,7 +1,7 @@
-import { test } from "node:test";
 import { strict as assert } from "node:assert";
-import { formatBeancountFile } from "./index.js";
+import { test } from "node:test";
 import type { BeancountFile } from "@Tiddo/beancount-types";
+import { formatBeancountFile } from "./index.js";
 
 test("formatBeancountFile returns a string", () => {
   const file: BeancountFile = {

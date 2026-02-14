@@ -1,6 +1,6 @@
-import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
-import { join, extname } from "node:path";
+import { createServer } from "node:http";
+import { extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));

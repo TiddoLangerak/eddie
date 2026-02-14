@@ -1,5 +1,5 @@
-import { parseBeancount } from "@Tiddo/beancount-parser";
 import { formatBeancountFile } from "@Tiddo/beancount-formatter";
+import { parseBeancount } from "@Tiddo/beancount-parser";
 
 function getElementByIdTyped<T extends HTMLElement>(
   id: string,
