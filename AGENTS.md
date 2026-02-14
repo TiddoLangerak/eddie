@@ -7,6 +7,7 @@
 - **Write tests** for new and changed behavior. Co-locate or mirror test layout (e.g. `*.test.ts` / `*.spec.ts` next to source or under `__tests__`). Tests aren't needed for `beancount-types`.
 - **Dependencies:** Prefer minimal dependencies; use the standard library where it's enough; when adding a dependency, note why it's needed (e.g. in a comment or PR).
 - **Format using Biome:** Run `npm run format` to format code.
+- **Be conservative with comments:** Comments aren't usually needed. Prefer descriptive naming instead.
 
 ---
 
