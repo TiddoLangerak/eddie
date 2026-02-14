@@ -1,6 +1,6 @@
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
-import { parseBeancount } from "./index.js";
+import { parseBeancount } from "./index.ts";
 
 test("parseBeancount returns a BeancountFile", () => {
   const result = parseBeancount("");
