@@ -9,6 +9,7 @@
 - **Format using Biome:** Run `npm run format` to format code.
 - **Be conservative with comments:** Comments aren't usually needed. Prefer descriptive naming instead.
 - **No dynamic imports:** Put imports at the top, not inline.
+- **Use subtests**. Typically, group tests by class/function under test.
 
 ---
 
