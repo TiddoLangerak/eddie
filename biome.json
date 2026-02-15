@@ -6,7 +6,8 @@
     "useIgnoreFile": true
   },
   "files": {
-    "include": ["packages/*", "*.json", "*.ts"]
+    "include": ["**/*.json", "**/*.ts"],
+    "ignore": ["node_modules/**", "**/node_modules/**"]
   },
   "formatter": {
     "enabled": true,
