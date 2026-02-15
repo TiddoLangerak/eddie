@@ -18,3 +18,4 @@
 - **Run `nvm use` before npm/node commands.** Always run `nvm use` before executing any npm or node commands to ensure the correct Node.js version is active.
 - **Don't use `npx` commands.**. Instead, suggest operations to be added to `package.json` scripts.
 - **Update this file when useful.** If feedback during work suggests a new rule or clarification, add or adjust it in AGENTS.md and mention the change to the user.
+- **When in worktrees, commit changes.** When working in a worktree, commit your changes to a branch while making them.
