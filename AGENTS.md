@@ -19,3 +19,4 @@
 - **Don't use `npx` commands.**. Instead, suggest operations to be added to `package.json` scripts.
 - **Update this file when useful.** If feedback during work suggests a new rule or clarification, add or adjust it in AGENTS.md and mention the change to the user.
 - **When in worktrees, commit changes.** When working in a worktree, commit your changes to a branch while making them.
+- **Typecheck & test when making changes**. If either fails, fix it, unless requested not to.
