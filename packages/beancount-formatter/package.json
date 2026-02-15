@@ -9,7 +9,6 @@
     "test": "node --test --experimental-strip-types src/**/*.test.ts",
     "build": "tsc -b"
   },
-  "dependencies": {
-    "@Tiddo/beancount-types": "*"
-  }
+  "dependencies": { "@Tiddo/beancount-types": "*", "@Tiddo/eddie-utils": "*" },
+  "devDependencies": { "@Tiddo/beancount-parser": "*" }
 }
