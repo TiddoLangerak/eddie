@@ -9,6 +9,7 @@
   },
   "exports": {
     "./strings": "./dist/strings.js",
-    "./arrays": "./dist/arrays.js", "./predicates": "./dist/predicates.js"
+    "./arrays": "./dist/arrays.js",
+    "./predicates": "./dist/predicates.js"
   }
 }

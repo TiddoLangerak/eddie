@@ -4,19 +4,31 @@ import { dropEnd, dropWhile, findIndex, takeWhile } from "./arrays.ts";
 
 test("findIndex", (t) => {
   t.test("returns index of first match", () => {
-    assert.equal(findIndex([1, 2, 3, 4], (n) => n > 2), 2);
+    assert.equal(
+      findIndex([1, 2, 3, 4], (n) => n > 2),
+      2,
+    );
   });
 
   t.test("returns null when no match", () => {
-    assert.equal(findIndex([1, 2, 3], (n) => n > 10), null);
+    assert.equal(
+      findIndex([1, 2, 3], (n) => n > 10),
+      null,
+    );
   });
 
   t.test("returns 0 when first element matches", () => {
-    assert.equal(findIndex([1, 2, 3], (n) => n === 1), 0);
+    assert.equal(
+      findIndex([1, 2, 3], (n) => n === 1),
+      0,
+    );
   });
 
   t.test("returns null for empty array", () => {
-    assert.equal(findIndex([], () => true), null);
+    assert.equal(
+      findIndex([], () => true),
+      null,
+    );
   });
 });
 
@@ -29,15 +41,24 @@ test("takeWhile", (t) => {
   });
 
   t.test("returns empty when predicate fails immediately", () => {
-    assert.deepEqual(takeWhile([1, 2, 3], (n) => n > 10), []);
+    assert.deepEqual(
+      takeWhile([1, 2, 3], (n) => n > 10),
+      [],
+    );
   });
 
   t.test("returns full array when predicate always holds", () => {
-    assert.deepEqual(takeWhile([1, 2, 3], () => true), [1, 2, 3]);
+    assert.deepEqual(
+      takeWhile([1, 2, 3], () => true),
+      [1, 2, 3],
+    );
   });
 
   t.test("returns empty for empty array", () => {
-    assert.deepEqual(takeWhile([], (n: number) => n < 5), []);
+    assert.deepEqual(
+      takeWhile([], (n: number) => n < 5),
+      [],
+    );
   });
 });
 
@@ -50,15 +71,24 @@ test("dropWhile", (t) => {
   });
 
   t.test("returns full array when predicate fails immediately", () => {
-    assert.deepEqual(dropWhile([1, 2, 3], (n) => n > 10), [1, 2, 3]);
+    assert.deepEqual(
+      dropWhile([1, 2, 3], (n) => n > 10),
+      [1, 2, 3],
+    );
   });
 
   t.test("returns empty when predicate always holds", () => {
-    assert.deepEqual(dropWhile([1, 2, 3], () => true), []);
+    assert.deepEqual(
+      dropWhile([1, 2, 3], () => true),
+      [],
+    );
   });
 
   t.test("returns empty for empty array", () => {
-    assert.deepEqual(dropWhile([], (n: number) => n < 5), []);
+    assert.deepEqual(
+      dropWhile([], (n: number) => n < 5),
+      [],
+    );
   });
 
   t.test("takeWhile and dropWhile partition the array", () => {
@@ -77,14 +107,23 @@ test("dropEnd", (t) => {
   });
 
   t.test("returns full array when predicate fails at end", () => {
-    assert.deepEqual(dropEnd([1, 2, 3], (n) => n > 10), [1, 2, 3]);
+    assert.deepEqual(
+      dropEnd([1, 2, 3], (n) => n > 10),
+      [1, 2, 3],
+    );
   });
 
   t.test("returns empty when predicate always holds", () => {
-    assert.deepEqual(dropEnd([1, 2, 3], () => true), []);
+    assert.deepEqual(
+      dropEnd([1, 2, 3], () => true),
+      [],
+    );
   });
 
   t.test("returns empty for empty array", () => {
-    assert.deepEqual(dropEnd([], (n: number) => n < 5), []);
+    assert.deepEqual(
+      dropEnd([], (n: number) => n < 5),
+      [],
+    );
   });
 });
