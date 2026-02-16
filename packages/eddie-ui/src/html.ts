@@ -1,6 +1,6 @@
 export class HtmlString {
   static readonly EMPTY = new HtmlString("");
-  private readonly html: string
+  private readonly html: string;
 
   constructor(html: string) {
     this.html = html;

@@ -3,96 +3,96 @@ import { extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { RouteContext } from "./beancountController.ts";
 import {
-	handleFormat,
-	handleParse,
-	handleSave,
-	handleView,
+  handleFormat,
+  handleParse,
+  handleSave,
+  handleView,
 } from "./beancountController.ts";
 import { parseFormData, readBody } from "./request.ts";
 import { sendError, sendHtml, sendRedirect } from "./response.ts";
-import { type Router, RouteBuilder } from "./routing.ts";
+import { RouteBuilder, type Router } from "./routing.ts";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
 const MIME_TYPES: Record<string, string> = {
-	".html": "text/html",
-	".css": "text/css",
-	".js": "application/javascript",
-	".json": "application/json",
+  ".html": "text/html",
+  ".css": "text/css",
+  ".js": "application/javascript",
+  ".json": "application/json",
 };
 
 export function createRouter(ctx: RouteContext): Router {
-	const builder = new RouteBuilder();
+  const builder = new RouteBuilder();
 
-	builder.on("GET", "/", async (req, res) => {
-		const url = new URL(req.url ?? "", `http://${req.headers.host}`);
-		const file = url.searchParams.get("file");
-		const saved = url.searchParams.has("saved");
-		const html = await handleView(ctx, file, saved);
-		sendHtml(res, html);
-	});
+  builder.on("GET", "/", async (req, res) => {
+    const url = new URL(req.url ?? "", `http://${req.headers.host}`);
+    const file = url.searchParams.get("file");
+    const saved = url.searchParams.has("saved");
+    const html = await handleView(ctx, file, saved);
+    sendHtml(res, html);
+  });
 
-	builder.on("POST", "/save", async (req, res) => {
-		const body = await readBody(req);
-		const formData = parseFormData(body);
-		const result = await handleSave(ctx, formData.file, formData.content);
+  builder.on("POST", "/save", async (req, res) => {
+    const body = await readBody(req);
+    const formData = parseFormData(body);
+    const result = await handleSave(ctx, formData.file, formData.content);
 
-		if ("redirect" in result) {
-			sendRedirect(res, result.redirect);
-		} else {
-			sendHtml(res, result.html);
-		}
-	});
+    if ("redirect" in result) {
+      sendRedirect(res, result.redirect);
+    } else {
+      sendHtml(res, result.html);
+    }
+  });
 
-	builder.on("POST", "/parse", async (req, res) => {
-		const body = await readBody(req);
-		const formData = parseFormData(body);
-		const html = await handleParse(ctx, formData.file, formData.content);
-		sendHtml(res, html);
-	});
+  builder.on("POST", "/parse", async (req, res) => {
+    const body = await readBody(req);
+    const formData = parseFormData(body);
+    const html = await handleParse(ctx, formData.file, formData.content);
+    sendHtml(res, html);
+  });
 
-	builder.on("POST", "/format", async (req, res) => {
-		const body = await readBody(req);
-		const formData = parseFormData(body);
-		const file = String(formData.file ?? "");
-		const content = String(formData.content ?? "");
-		const html = await handleFormat(ctx, file, content);
-		sendHtml(res, html);
-	});
+  builder.on("POST", "/format", async (req, res) => {
+    const body = await readBody(req);
+    const formData = parseFormData(body);
+    const file = String(formData.file ?? "");
+    const content = String(formData.content ?? "");
+    const html = await handleFormat(ctx, file, content);
+    sendHtml(res, html);
+  });
 
-	builder.onPrefix("GET", "/static/", async (req, res) => {
-		const url = new URL(req.url ?? "", `http://${req.headers.host}`);
-		const relativePath = url.pathname.slice("/static/".length);
+  builder.onPrefix("GET", "/static/", async (req, res) => {
+    const url = new URL(req.url ?? "", `http://${req.headers.host}`);
+    const relativePath = url.pathname.slice("/static/".length);
 
-		if (relativePath.includes("..") || relativePath.startsWith("/")) {
-			sendError(res, "Invalid path", 400);
-			return;
-		}
+    if (relativePath.includes("..") || relativePath.startsWith("/")) {
+      sendError(res, "Invalid path", 400);
+      return;
+    }
 
-		const staticDir = join(__dirname, "..", "static");
-		const filePath = join(staticDir, relativePath);
+    const staticDir = join(__dirname, "..", "static");
+    const filePath = join(staticDir, relativePath);
 
-		if (!filePath.startsWith(staticDir)) {
-			sendError(res, "Invalid path", 400);
-			return;
-		}
+    if (!filePath.startsWith(staticDir)) {
+      sendError(res, "Invalid path", 400);
+      return;
+    }
 
-		try {
-			const stats = await stat(filePath);
-			if (!stats.isFile()) {
-				sendError(res, "Not found", 404);
-				return;
-			}
+    try {
+      const stats = await stat(filePath);
+      if (!stats.isFile()) {
+        sendError(res, "Not found", 404);
+        return;
+      }
 
-			const content = await readFile(filePath);
-			const ext = extname(filePath);
-			const mimeType = MIME_TYPES[ext] || "application/octet-stream";
-			res.writeHead(200, { "Content-Type": mimeType });
-			res.end(content);
-		} catch {
-			sendError(res, "Not found", 404);
-		}
-	});
+      const content = await readFile(filePath);
+      const ext = extname(filePath);
+      const mimeType = MIME_TYPES[ext] || "application/octet-stream";
+      res.writeHead(200, { "Content-Type": mimeType });
+      res.end(content);
+    } catch {
+      sendError(res, "Not found", 404);
+    }
+  });
 
-	return builder.build();
+  return builder.build();
 }

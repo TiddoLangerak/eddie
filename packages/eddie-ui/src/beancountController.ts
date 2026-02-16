@@ -42,80 +42,80 @@ export async function handleView(
 }
 
 export async function handleSave(
-	ctx: RouteContext,
-	file: string | string[] | undefined,
-	content: string | string[] | undefined,
+  ctx: RouteContext,
+  file: string | string[] | undefined,
+  content: string | string[] | undefined,
 ): Promise<{ redirect: string } | { html: HtmlString }> {
-	const files = await getBeancountFiles(ctx.workspace);
+  const files = await getBeancountFiles(ctx.workspace);
 
-	if (
-		typeof file !== "string" ||
-		typeof content !== "string" ||
-		!file ||
-		!content
-	) {
-		const message = html`<div class="message error">Missing file or content</div>`;
-		return {
-			html: layout(
-				ctx.workspace,
-				files,
-				typeof file === "string" ? file : null,
-				typeof content === "string" ? content : "",
-				message,
-			),
-		};
-	}
+  if (
+    typeof file !== "string" ||
+    typeof content !== "string" ||
+    !file ||
+    !content
+  ) {
+    const message = html`<div class="message error">Missing file or content</div>`;
+    return {
+      html: layout(
+        ctx.workspace,
+        files,
+        typeof file === "string" ? file : null,
+        typeof content === "string" ? content : "",
+        message,
+      ),
+    };
+  }
 
-	if (!isValidPath(ctx.workspace, file)) {
-		const message = html`<div class="message error">Invalid file path</div>`;
-		return {
-			html: layout(ctx.workspace, files, file, content, message),
-		};
-	}
+  if (!isValidPath(ctx.workspace, file)) {
+    const message = html`<div class="message error">Invalid file path</div>`;
+    return {
+      html: layout(ctx.workspace, files, file, content, message),
+    };
+  }
 
-	await writeFile(join(ctx.workspace, file), content);
-	return { redirect: `/?file=${encodeURIComponent(file)}&saved=true` };
+  await writeFile(join(ctx.workspace, file), content);
+  return { redirect: `/?file=${encodeURIComponent(file)}&saved=true` };
 }
 
 export async function handleParse(
-	ctx: RouteContext,
-	file: string | string[] | undefined,
-	content: string | string[] | undefined,
+  ctx: RouteContext,
+  file: string | string[] | undefined,
+  content: string | string[] | undefined,
 ): Promise<HtmlString> {
-	const files = await getBeancountFiles(ctx.workspace);
+  const files = await getBeancountFiles(ctx.workspace);
 
-	if (
-		typeof file !== "string" ||
-		typeof content !== "string" ||
-		!file ||
-		!content
-	) {
-		const message = html`<div class="message error">Missing file or content</div>`;
-		return layout(
-			ctx.workspace,
-			files,
-			typeof file === "string" ? file : null,
-			typeof content === "string" ? content : "",
-			message,
-		);
-	}
+  if (
+    typeof file !== "string" ||
+    typeof content !== "string" ||
+    !file ||
+    !content
+  ) {
+    const message = html`<div class="message error">Missing file or content</div>`;
+    return layout(
+      ctx.workspace,
+      files,
+      typeof file === "string" ? file : null,
+      typeof content === "string" ? content : "",
+      message,
+    );
+  }
 
-	try {
-		const parsed = parseBeancount(content);
-		const message = html`
+  try {
+    const parsed = parseBeancount(content);
+    const message = html`
 			<div class="message success">
 				<strong>Parse successful</strong>
 				<pre>${JSON.stringify(parsed, null, 2)}</pre>
 			</div>
 		`;
-		return layout(ctx.workspace, files, file, content, message);
-	} catch (error: unknown) {
-		const errorMessage = error instanceof Error ? error.message : String(error);
-		const message = html`
+    return layout(ctx.workspace, files, file, content, message);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const message = html`
 			<div class="message error">Parse error: ${errorMessage}</div>
 		`;
-		return layout(ctx.workspace, files, file, content, message);
-	}
+    return layout(ctx.workspace, files, file, content, message);
+  }
 }
 
 export async function handleFormat(
