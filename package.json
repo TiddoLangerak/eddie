@@ -11,7 +11,7 @@
     "test": "npm run test --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
     "check": "npm run lint && npm run typecheck && npm run test",
-    "serve": "npm run serve --workspace packages/eddie-ui --"
+    "serve": "./packages/eddie-ui/serve"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

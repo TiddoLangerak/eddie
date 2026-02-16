@@ -18,7 +18,7 @@
     "typecheck": "tsc --noEmit",
     "test": "node --test --experimental-strip-types --conditions=development src/**/*.test.ts",
     "build": "tsc -b",
-    "serve": "node --experimental-strip-types --conditions=development serve.ts"
+    "serve": "./serve"
   },
   "dependencies": {
     "@Tiddo/beancount-types": "*",

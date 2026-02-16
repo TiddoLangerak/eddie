@@ -16,6 +16,7 @@ import type {
   Query,
   Transaction,
 } from "@Tiddo/beancount-types";
+import { normalizeLineEndings } from "@Tiddo/eddie-utils/files";
 import { trimIndent } from "@Tiddo/eddie-utils/strings";
 import { formatBeancountFile } from "./index.ts";
 
@@ -25,9 +26,7 @@ function assertParseFormatIdentity(input: string): void {
 
   // Tolerate addition of trailing newline if input doesn't have one
   const normalizedInput = input.endsWith("\n") ? input : `${input}\n`;
-  const normalizedFormatted = formatted.endsWith("\n")
-    ? formatted
-    : `${formatted}\n`;
+  const normalizedFormatted = normalizeLineEndings(formatted);
 
   assert.equal(normalizedFormatted, normalizedInput);
 }

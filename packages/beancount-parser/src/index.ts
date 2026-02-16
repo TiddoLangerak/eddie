@@ -3,6 +3,7 @@ import type {
   CommentOrBlank,
   Directive,
 } from "@Tiddo/beancount-types";
+import { normalizeLineEndings } from "@Tiddo/eddie-utils/files";
 import {
   createState,
   first,
@@ -52,9 +53,7 @@ const fileParser = map(
  * @returns A parsed BeancountFile object
  */
 export function parseBeancount(beancountFile: string): BeancountFile {
-  const input = beancountFile.endsWith("\n")
-    ? beancountFile
-    : `${beancountFile}\n`;
+  const input = normalizeLineEndings(beancountFile);
   const result = run(fileParser, input);
   if (!result.ok) {
     throw new ParseError(
