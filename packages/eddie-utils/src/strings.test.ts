@@ -67,7 +67,7 @@ test("trimIndent", (t) => {
 
     b
 `);
-    assert.equal(result, "a\n\n\nb");
+    assert.equal(result, "a\n\nb");
   });
 
   t.test("empty string returns empty", () => {

@@ -1,22 +1,97 @@
-import type { BeancountFile, Directive } from "@Tiddo/beancount-types";
+import type {
+  BeancountFile,
+  CommentOrBlank,
+  Directive,
+} from "@Tiddo/beancount-types";
+import {
+  createState,
+  first,
+  map,
+  repeated,
+  run,
+  sequence,
+} from "./combinators.ts";
+import type { Parser } from "./combinators.ts";
+import { directive } from "./directives.ts";
+import { blankLine, lineComment } from "./lexical.ts";
+
+export class ParseError extends Error {
+  readonly line: number;
+  readonly column: number;
+
+  constructor(message: string, line: number, column: number) {
+    super(message);
+    this.line = line;
+    this.column = column;
+  }
+}
+
+const blankLineOrComment = first<CommentOrBlank>(
+  map(blankLine, () => ({ kind: "blank" as const })),
+  map(lineComment, (comment) => ({ kind: "comment" as const, comment })),
+);
+
+const blankLinesAndComments = repeated(blankLineOrComment);
+
+const commentedDirective = map(
+  sequence(blankLinesAndComments, directive),
+  ([prefix, directive]) => ({
+    prefix,
+    directive,
+  }),
+);
+
+const directives = repeated(commentedDirective);
+
+const fileParser = map(
+  sequence(directives, blankLinesAndComments),
+  ([items, footer]) => ({
+    items,
+    footer,
+  }),
+);
 
 /**
  * Parses a Beancount file string into a structured BeancountFile object.
+ * Throws on first parse error.
  *
  * @param beancountFile - The raw Beancount file content as a string
  * @returns A parsed BeancountFile object
  */
 export function parseBeancount(beancountFile: string): BeancountFile {
-  // Stub implementation - returns empty structure
-  // TODO: Implement actual Beancount parsing logic
-  const lines = beancountFile.trim().split("\n");
-  const directives: Directive[] = [];
+  const input = beancountFile.endsWith("\n")
+    ? beancountFile
+    : `${beancountFile}\n`;
+  const result = run(fileParser, input);
+  if (!result.ok) {
+    throw new ParseError(
+      result.message,
+      result.position.line,
+      result.position.column,
+    );
+  }
+  if (result.state.input.length > 0) {
+    throw new ParseError(
+      "unparseable input",
+      result.state.position.line,
+      result.state.position.column,
+    );
+  }
 
-  // Placeholder: just return empty structure
+  const { items, footer } = result.value;
+  const directives = items.map(({ prefix, directive: dir }) => ({
+    ...dir,
+    formatting: {
+      header: prefix,
+      footer: dir.formatting.footer,
+      inlineComment: dir.formatting.inlineComment,
+    },
+  }));
+
   return {
     directives,
-    metadata: {
-      lineCount: lines.length,
-    },
+    header: [],
+    footer,
+    metadata: { lineCount: beancountFile.split("\n").length },
   };
 }

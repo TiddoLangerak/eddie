@@ -2,11 +2,21 @@
   "name": "@Tiddo/beancount-formatter",
   "version": "0.0.0",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "exports": {
+    "./*": {
+      "development": "./src/*.ts",
+      "types": "./src/*.ts",
+      "default": "./dist/*.js"
+    },
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "node --test --experimental-strip-types src/**/*.test.ts",
+    "test": "node --test --experimental-strip-types --conditions=development src/**/*.test.ts",
     "build": "tsc -b"
   },
   "dependencies": { "@Tiddo/beancount-types": "*", "@Tiddo/eddie-utils": "*" },

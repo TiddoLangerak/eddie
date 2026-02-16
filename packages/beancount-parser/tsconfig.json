@@ -4,7 +4,5 @@
     "rootDir": "src",
     "outDir": "dist"
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["src/**/*.test.ts"],
-  "references": [{ "path": "../beancount-types" }]
+  "include": ["src/**/*.ts"]
 }
