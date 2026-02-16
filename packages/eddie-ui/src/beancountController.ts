@@ -1,7 +1,7 @@
 import { readFile, readdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { formatBeancountFile } from "@Tiddo/beancount-formatter";
-import { parseBeancount } from "@Tiddo/beancount-parser";
+import { ParseError, parseBeancount } from "@Tiddo/beancount-parser";
 import { HtmlString, html } from "./html.ts";
 import { layout } from "./templates/layout.ts";
 
@@ -110,7 +110,10 @@ export async function handleParse(
 		`;
     return layout(ctx.workspace, files, file, content, message);
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
+    let errorMessage = error instanceof Error ? error.message : String(error);
+    if (error instanceof ParseError) {
+      errorMessage = `${error.message} at line ${error.line}, column ${error.column}`;
+    }
     const message = html`
 			<div class="message error">Parse error: ${errorMessage}</div>
 		`;
@@ -133,7 +136,10 @@ export async function handleFormat(
     `;
     return layout(ctx.workspace, files, file, formatted, message);
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
+    let errorMessage = error instanceof Error ? error.message : String(error);
+    if (error instanceof ParseError) {
+      errorMessage = `${error.message} at line ${error.line}, column ${error.column}`;
+    }
     const message = html`
       <div class="message error">Format error: ${errorMessage}</div>
     `;
