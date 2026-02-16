@@ -2,12 +2,13 @@
  * Primitive (compound) parsers building on lexical tokens.
  */
 
-import type { Amount } from "@Tiddo/beancount-types";
+import type { Amount, CommentOrBlank } from "@Tiddo/beancount-types";
 import {
   between,
   first,
   map,
   optional,
+  repeated,
   sepByAtLeastOnce,
   sequence,
   string,
@@ -17,12 +18,15 @@ import {
   account as accountLex,
   afterOptionalWhitespace,
   afterWhitespace,
+  blankLine,
+  boolean,
   currency,
   date as dateLex,
   key,
   lineComment,
   lineEnd,
   link,
+  newline,
   number,
   optionalWhitespace,
   quotedString,
@@ -30,7 +34,7 @@ import {
   whitespace,
 } from "./lexical.ts";
 
-export type MetadataValue = string | number;
+export type MetadataValue = string | number | boolean;
 export type Metadata = { key: string; value: MetadataValue };
 
 const optionalInlineComment: Parser<string | undefined> = optional(
@@ -57,6 +61,18 @@ export function commentedLine<TFirst, TRest extends unknown[]>(
   }));
 }
 
+export const commentLine = map(
+  sequence(optionalWhitespace, lineComment, newline),
+  ([, comment]) => comment,
+);
+
+export const blankLineOrComment = first<CommentOrBlank>(
+  map(blankLine, () => ({ kind: "blank" as const })),
+  map(commentLine, (comment) => ({ kind: "comment" as const, comment })),
+);
+
+export const blankLinesAndComments = repeated(blankLineOrComment);
+
 export const amount: Parser<Amount> = map(
   sequence(number, whitespace, currency),
   ([num, , curr]) => ({ number: num, currency: curr }),
@@ -73,7 +89,8 @@ export const links: Parser<string[]> = sepByAtLeastOnce(
   optionalWhitespace,
 );
 
-const metadataValue: Parser<MetadataValue> = first(
+const metadataValue: Parser<MetadataValue> = first<MetadataValue>(
+  boolean,
   quotedString,
   map(number, (n) => Number(n)),
 );
@@ -92,6 +109,28 @@ export const metadataEntry: Parser<Metadata> = map(
 export const metadataLine: Parser<Metadata> = map(
   sequence(
     whitespace,
+    metadataEntry,
+    optional(afterOptionalWhitespace(lineComment)),
+    lineEnd,
+  ),
+  ([, entry]) => entry,
+);
+
+// Transaction-level metadata (2 spaces indentation)
+export const transactionMetadataLine: Parser<Metadata> = map(
+  sequence(
+    string("  "),
+    metadataEntry,
+    optional(afterOptionalWhitespace(lineComment)),
+    lineEnd,
+  ),
+  ([, entry]) => entry,
+);
+
+// Posting-level metadata (4 spaces indentation)
+export const postingMetadataLine: Parser<Metadata> = map(
+  sequence(
+    string("    "),
     metadataEntry,
     optional(afterOptionalWhitespace(lineComment)),
     lineEnd,

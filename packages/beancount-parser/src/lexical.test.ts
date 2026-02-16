@@ -52,13 +52,13 @@ describe("lexical", () => {
   it("tag parses #name", () => {
     const r = run(tag, "#trip-2024");
     assert.ok(r.ok);
-    if (r.ok) assert.equal(r.value, "#trip-2024");
+    if (r.ok) assert.equal(r.value, "trip-2024");
   });
 
   it("link parses ^name", () => {
     const r = run(link, "^receipt-1");
     assert.ok(r.ok);
-    if (r.ok) assert.equal(r.value, "^receipt-1");
+    if (r.ok) assert.equal(r.value, "receipt-1");
   });
 
   it("flag parses * or !", () => {

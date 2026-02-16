@@ -5,6 +5,7 @@
 import type {
   Balance,
   Close,
+  CommentOrBlank,
   Commodity,
   Custom,
   Directive,
@@ -36,7 +37,6 @@ import {
   currency,
   flag,
   key,
-  newline,
   number,
   optionalWhitespace,
   quotedString,
@@ -46,12 +46,15 @@ import type { Metadata, MetadataValue } from "./primitives.ts";
 import {
   account,
   amount,
+  blankLinesAndComments,
   commentedLine,
   date,
   links,
   metadataLine,
   postingLine,
+  postingMetadataLine,
   tags,
+  transactionMetadataLine,
 } from "./primitives.ts";
 
 function directiveHeader<
@@ -73,16 +76,22 @@ function directiveHeader<
 }
 
 const postingBody = map(
-  sequence(postingLine, repeated(metadataLine)),
-  ([line, metadataLines]) => ({
+  sequence(blankLinesAndComments, postingLine, repeated(postingMetadataLine)),
+  ([commentsBefore, line, metadataLines]) => ({
     ...line,
+    commentsBefore,
     metadata: Object.fromEntries(metadataLines.map((m) => [m.key, m.value])),
   }),
 );
 
 const transactionBody = map(
-  sequence(repeated(metadataLine), repeated(postingBody)),
-  ([metadataLines, postings]) => ({
+  sequence(
+    blankLinesAndComments,
+    repeated(transactionMetadataLine),
+    repeated(postingBody),
+  ),
+  ([metadataHeader, metadataLines, postings]) => ({
+    metadataHeader,
     metadata: Object.fromEntries(metadataLines.map((m) => [m.key, m.value])),
     postings,
   }),
@@ -98,19 +107,30 @@ type TransactionHeader = {
   inlineComment: string | undefined;
 };
 
+const payeeAndNarration = map(
+  sequence(
+    afterWhitespace(quotedString),
+    optional(afterWhitespace(quotedString)),
+  ),
+  ([firstString, secondString]) => {
+    if (secondString !== undefined) {
+      return { payee: firstString, narration: secondString };
+    }
+    return { payee: undefined, narration: firstString };
+  },
+);
+
 const transactionHeader = map(
   commentedLine(
     date,
     whitespace,
     flag,
-    optional(afterWhitespace(quotedString)),
-    whitespace,
-    quotedString,
+    payeeAndNarration,
     optional(afterOptionalWhitespace(tags)),
     optional(afterOptionalWhitespace(links)),
   ),
   ({
-    parts: [date, , flag, payee, , narration, tags, links],
+    parts: [date, , flag, { payee, narration }, tags, links],
     comment: inlineComment,
   }) => ({
     date,
@@ -134,13 +154,14 @@ const transaction = map(
     tags: header.tags,
     links: header.links,
     postings: body.postings.map((p) => {
-      const { inlineComment, ...rest } = p;
+      const { inlineComment, commentsBefore, ...rest } = p;
       return {
         ...rest,
-        formatting: { header: [], footer: [], inlineComment },
+        formatting: { header: commentsBefore, footer: [], inlineComment },
       };
     }),
     metadata: body.metadata,
+    metadataHeader: body.metadataHeader,
     formatting: {
       header: [],
       footer: [],

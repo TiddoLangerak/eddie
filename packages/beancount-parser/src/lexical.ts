@@ -64,9 +64,15 @@ export const quotedString: Parser<string> = first(
   quotedStringWith("'"),
 );
 
-export const tag: Parser<string> = stringSequence("#", /[a-zA-Z0-9_-]+/);
+export const tag: Parser<string> = map(
+  stringSequence("#", /[a-zA-Z0-9_-]+/),
+  (fullTag) => fullTag.slice(1), // Remove the '#' prefix
+);
 
-export const link: Parser<string> = stringSequence("^", /[a-zA-Z0-9_-]+/);
+export const link: Parser<string> = map(
+  stringSequence("^", /[a-zA-Z0-9_-]+/),
+  (fullLink) => fullLink.slice(1), // Remove the '^' prefix
+);
 
 export const flag: Parser<string> = first(string("*"), string("!"));
 

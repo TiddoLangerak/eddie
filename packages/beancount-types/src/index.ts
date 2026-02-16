@@ -43,6 +43,7 @@ export interface Transaction {
   links: string[];
   postings: Posting[];
   metadata: Record<string, unknown>;
+  metadataHeader: CommentOrBlank[]; // Comments/blanks before metadata
   formatting: FormattingInfo;
 }
 

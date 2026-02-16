@@ -13,7 +13,7 @@ import {
 } from "./combinators.ts";
 import type { Parser } from "./combinators.ts";
 import { directive } from "./directives.ts";
-import { blankLine, lineComment } from "./lexical.ts";
+import { blankLinesAndComments } from "./primitives.ts";
 
 export class ParseError extends Error {
   readonly line: number;
@@ -25,13 +25,6 @@ export class ParseError extends Error {
     this.column = column;
   }
 }
-
-const blankLineOrComment = first<CommentOrBlank>(
-  map(blankLine, () => ({ kind: "blank" as const })),
-  map(lineComment, (comment) => ({ kind: "comment" as const, comment })),
-);
-
-const blankLinesAndComments = repeated(blankLineOrComment);
 
 const commentedDirective = map(
   sequence(blankLinesAndComments, directive),
