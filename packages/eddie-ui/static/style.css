@@ -25,8 +25,7 @@
   --spacing-xl: 2rem;
 
   /* Sizes */
-  --max-width: 1400px;
-  --sidebar-width: 250px;
+  --sidebar-width: 380px;
   --editor-min-height: 400px;
 
   /* Border radius */
@@ -57,20 +56,24 @@
   padding: 0;
 }
 
+html,
+body {
+  height: 100%;
+}
+
 body {
   font-family: var(--font-sans);
   line-height: var(--line-height);
-  padding: var(--spacing-xl);
-  background: var(--color-background);
+  margin: 0;
+  padding: 0;
+  background: var(--color-surface);
 }
 
 #app {
-  max-width: var(--max-width);
-  margin: 0 auto;
-  background: var(--color-surface);
-  padding: var(--spacing-xl);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: var(--spacing-md);
 }
 
 h1 {
@@ -82,12 +85,14 @@ h1 {
   display: grid;
   grid-template-columns: var(--sidebar-width) 1fr;
   gap: var(--spacing-xl);
-  margin-top: var(--spacing-md);
+  flex: 1;
+  min-height: 0;
 }
 
 .file-browser {
   border-right: 1px solid var(--color-border);
   padding-right: var(--spacing-md);
+  min-width: 0;
 }
 
 .file-browser h2 {
@@ -123,6 +128,7 @@ h1 {
   text-decoration: none;
   color: var(--color-text);
   border-radius: var(--radius-sm);
+  word-break: break-all;
 }
 
 .file-list a:hover {
@@ -146,6 +152,24 @@ h1 {
   padding: var(--spacing-sm);
   background: var(--color-header-bg);
   border-radius: var(--radius-sm);
+}
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.breadcrumbs .segment {
+  color: var(--color-text);
+}
+
+.breadcrumbs .separator {
+  color: var(--color-text-muted);
+  user-select: none;
 }
 
 .current-file {
