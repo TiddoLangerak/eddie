@@ -1,5 +1,5 @@
-import type { EditorState } from "./editor.ts";
 import { HtmlString, html } from "../html.ts";
+import type { EditorState } from "./editor.ts";
 import { editor } from "./editor.ts";
 import { fileBrowser } from "./fileBrowser.ts";
 

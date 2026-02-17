@@ -1,5 +1,5 @@
-import type { BeancountFile } from "@tiddo/beancount-types";
 import type { ParseError } from "@tiddo/beancount-parser";
+import type { BeancountFile } from "@tiddo/beancount-types";
 import { HtmlString, html, joining } from "../html.ts";
 import { directivesView } from "./directivesView.ts";
 
@@ -10,9 +10,15 @@ export type EditorState =
 
 function parseErrorSourceView(content: string, error: ParseError): HtmlString {
   const lines = content.split("\n");
-  const errorLineIndex = Math.max(0, Math.min(error.line - 1, lines.length - 1));
+  const errorLineIndex = Math.max(
+    0,
+    Math.min(error.line - 1, lines.length - 1),
+  );
   const lineContent = lines[errorLineIndex] ?? "";
-  const columnIndex = Math.max(0, Math.min(error.column - 1, lineContent.length));
+  const columnIndex = Math.max(
+    0,
+    Math.min(error.column - 1, lineContent.length),
+  );
 
   const lineParts = lines.map((line, i) => {
     const lineNo = i + 1;
@@ -35,7 +41,10 @@ function parseErrorSourceView(content: string, error: ParseError): HtmlString {
 	`;
 }
 
-export function editor(currentFile: string | null, state: EditorState): HtmlString {
+export function editor(
+  currentFile: string | null,
+  state: EditorState,
+): HtmlString {
   if (!currentFile) {
     return html`
 			<main class="editor-container">
