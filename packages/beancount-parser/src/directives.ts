@@ -12,9 +12,11 @@ import type {
   Document,
   Event,
   FormattingInfo,
+  Include,
   Note,
   Open,
   Pad,
+  Plugin,
   Posting,
   Price,
   Query,
@@ -276,7 +278,32 @@ const custom: Parser<Custom> = directiveHeader(
   ),
 );
 
+const include: Parser<Include> = map(
+  commentedLine(string("include"), afterWhitespace(quotedString)),
+  ({ parts: [, filename], comment }) => ({
+    type: "include",
+    filename,
+    formatting: { header: [], footer: [], inlineComment: comment },
+  }),
+);
+
+const plugin: Parser<Plugin> = map(
+  commentedLine(
+    string("plugin"),
+    afterWhitespace(quotedString),
+    optional(afterWhitespace(quotedString)),
+  ),
+  ({ parts: [, module, config], comment }) => ({
+    type: "plugin",
+    module,
+    config,
+    formatting: { header: [], footer: [], inlineComment: comment },
+  }),
+);
+
 export const directive: Parser<Directive> = first<Directive>(
+  include,
+  plugin,
   transaction,
   open,
   close,

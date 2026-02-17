@@ -9,9 +9,11 @@ import type {
   Directive,
   Document,
   Event,
+  Include,
   Note,
   Open,
   Pad,
+  Plugin,
   Posting,
   Price,
   Query,
@@ -98,6 +100,12 @@ function formatDirective(directive: Directive): string {
       break;
     case "custom":
       formattedDirective = formatCustom(directive);
+      break;
+    case "include":
+      formattedDirective = formatInclude(directive);
+      break;
+    case "plugin":
+      formattedDirective = formatPlugin(directive);
       break;
     default:
       unreachable(directive);
@@ -214,6 +222,17 @@ function formatClose(close: Close): string {
 
 function formatCommodity(commodity: Commodity): string {
   return `${commodity.date} commodity ${commodity.currency}`;
+}
+
+function formatInclude(include: Include): string {
+  return `include ${quoted(include.filename)}`;
+}
+
+function formatPlugin(plugin: Plugin): string {
+  const base = `plugin ${quoted(plugin.module)}`;
+  return plugin.config !== undefined
+    ? `${base} ${quoted(plugin.config)}`
+    : base;
 }
 
 function formatPad(pad: Pad): string {

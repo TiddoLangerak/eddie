@@ -9,9 +9,11 @@ import type {
   Custom,
   Document,
   Event,
+  Include,
   Note,
   Open,
   Pad,
+  Plugin,
   Price,
   Query,
   Transaction,
@@ -234,6 +236,61 @@ describe("formatBeancountFile", () => {
         Assets:Checking
     `);
     assert.equal(result, expected);
+  });
+
+  it("formats include directive", () => {
+    const include: Include = {
+      type: "include",
+      filename: "ledgers/main.beancount",
+      formatting: { header: [], footer: [], inlineComment: undefined },
+    };
+
+    const file: BeancountFile = {
+      directives: [include],
+      header: [],
+      footer: [],
+      metadata: {},
+    };
+
+    const result = formatBeancountFile(file);
+    assert.equal(result, 'include "ledgers/main.beancount"');
+  });
+
+  it("formats plugin directive without config", () => {
+    const plugin: Plugin = {
+      type: "plugin",
+      module: "beancount.plugins.importer",
+      formatting: { header: [], footer: [], inlineComment: undefined },
+    };
+
+    const file: BeancountFile = {
+      directives: [plugin],
+      header: [],
+      footer: [],
+      metadata: {},
+    };
+
+    const result = formatBeancountFile(file);
+    assert.equal(result, 'plugin "beancount.plugins.importer"');
+  });
+
+  it("formats plugin directive with config", () => {
+    const plugin: Plugin = {
+      type: "plugin",
+      module: "beancount.plugins.other",
+      config: "some_config",
+      formatting: { header: [], footer: [], inlineComment: undefined },
+    };
+
+    const file: BeancountFile = {
+      directives: [plugin],
+      header: [],
+      footer: [],
+      metadata: {},
+    };
+
+    const result = formatBeancountFile(file);
+    assert.equal(result, 'plugin "beancount.plugins.other" "some_config"');
   });
 
   it("formats balance directive", () => {
@@ -772,6 +829,33 @@ test("round-trip", (t) => {
         ;; Section header
         2024-01-01 open Assets:Bank:Checking
         ;; Another comment
+      `),
+    );
+  });
+
+  t.test("include directive", () => {
+    assertParseFormatIdentity('include "ledgers/main.beancount"\n');
+  });
+
+  t.test("plugin directive without config", () => {
+    assertParseFormatIdentity('plugin "beancount.plugins.importer"\n');
+  });
+
+  t.test("plugin directive with config", () => {
+    assertParseFormatIdentity(
+      'plugin "beancount.plugins.other" "some_config"\n',
+    );
+  });
+
+  t.test("include and plugin with other directives", () => {
+    assertParseFormatIdentity(
+      trimIndent(`
+        include "ledgers/accounts.beancount"
+        plugin "beancount.plugins.importer"
+        2024-01-01 open Assets:Bank:Checking USD
+        2024-01-15 * "First transaction"
+          Assets:Bank:Checking  100.00 USD
+          Income:Salary  -100.00 USD
       `),
     );
   });

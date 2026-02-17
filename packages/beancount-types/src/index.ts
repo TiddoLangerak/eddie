@@ -21,6 +21,8 @@ export interface BeancountFile {
 
 export type Directive =
   | Transaction
+  | Include
+  | Plugin
   | Balance
   | Open
   | Close
@@ -32,6 +34,19 @@ export type Directive =
   | Event
   | Query
   | Custom;
+
+export interface Include {
+  type: "include";
+  filename: string;
+  formatting: FormattingInfo;
+}
+
+export interface Plugin {
+  type: "plugin";
+  module: string;
+  config?: string;
+  formatting: FormattingInfo;
+}
 
 export interface Transaction {
   type: "transaction";

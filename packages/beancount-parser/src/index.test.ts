@@ -70,6 +70,34 @@ describe("parseBeancount", () => {
     }
   });
 
+  it("parses include directive", () => {
+    const input = 'include "ledgers/main.beancount"\n';
+    const result = parseBeancount(input);
+    assert.equal(result.directives.length, 1);
+    assert.equal(result.directives[0].type, "include");
+    if (result.directives[0].type === "include") {
+      assert.equal(result.directives[0].filename, "ledgers/main.beancount");
+    }
+  });
+
+  it("parses plugin directive with and without config", () => {
+    const input = `plugin "beancount.plugins.importer"
+plugin "beancount.plugins.other" "some_config"
+`;
+    const result = parseBeancount(input);
+    assert.equal(result.directives.length, 2);
+    assert.equal(result.directives[0].type, "plugin");
+    assert.equal(result.directives[1].type, "plugin");
+    if (result.directives[0].type === "plugin") {
+      assert.equal(result.directives[0].module, "beancount.plugins.importer");
+      assert.equal(result.directives[0].config, undefined);
+    }
+    if (result.directives[1].type === "plugin") {
+      assert.equal(result.directives[1].module, "beancount.plugins.other");
+      assert.equal(result.directives[1].config, "some_config");
+    }
+  });
+
   it("parses commodity and price", () => {
     const input = `2024-01-01 commodity USD
 2024-01-01 price USD 1.2 CAD
