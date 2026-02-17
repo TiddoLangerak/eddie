@@ -98,6 +98,17 @@ plugin "beancount.plugins.other" "some_config"
     }
   });
 
+  it("parses option directive", () => {
+    const input = 'option "operating_currency" "USD"\n';
+    const result = parseBeancount(input);
+    assert.equal(result.directives.length, 1);
+    assert.equal(result.directives[0].type, "option");
+    if (result.directives[0].type === "option") {
+      assert.equal(result.directives[0].name, "operating_currency");
+      assert.equal(result.directives[0].value, "USD");
+    }
+  });
+
   it("parses commodity and price", () => {
     const input = `2024-01-01 commodity USD
 2024-01-01 price USD 1.2 CAD

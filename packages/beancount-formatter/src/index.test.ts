@@ -12,6 +12,7 @@ import type {
   Include,
   Note,
   Open,
+  Option,
   Pad,
   Plugin,
   Price,
@@ -291,6 +292,25 @@ describe("formatBeancountFile", () => {
 
     const result = formatBeancountFile(file);
     assert.equal(result, 'plugin "beancount.plugins.other" "some_config"');
+  });
+
+  it("formats option directive", () => {
+    const option: Option = {
+      type: "option",
+      name: "operating_currency",
+      value: "USD",
+      formatting: { header: [], footer: [], inlineComment: undefined },
+    };
+
+    const file: BeancountFile = {
+      directives: [option],
+      header: [],
+      footer: [],
+      metadata: {},
+    };
+
+    const result = formatBeancountFile(file);
+    assert.equal(result, 'option "operating_currency" "USD"');
   });
 
   it("formats balance directive", () => {
@@ -845,6 +865,10 @@ test("round-trip", (t) => {
     assertParseFormatIdentity(
       'plugin "beancount.plugins.other" "some_config"\n',
     );
+  });
+
+  t.test("option directive", () => {
+    assertParseFormatIdentity('option "operating_currency" "USD"\n');
   });
 
   t.test("include and plugin with other directives", () => {

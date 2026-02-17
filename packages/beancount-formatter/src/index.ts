@@ -12,6 +12,7 @@ import type {
   Include,
   Note,
   Open,
+  Option,
   Pad,
   Plugin,
   Posting,
@@ -106,6 +107,9 @@ function formatDirective(directive: Directive): string {
       break;
     case "plugin":
       formattedDirective = formatPlugin(directive);
+      break;
+    case "option":
+      formattedDirective = formatOption(directive);
       break;
     default:
       unreachable(directive);
@@ -233,6 +237,10 @@ function formatPlugin(plugin: Plugin): string {
   return plugin.config !== undefined
     ? `${base} ${quoted(plugin.config)}`
     : base;
+}
+
+function formatOption(option: Option): string {
+  return `option ${quoted(option.name)} ${quoted(option.value)}`;
 }
 
 function formatPad(pad: Pad): string {

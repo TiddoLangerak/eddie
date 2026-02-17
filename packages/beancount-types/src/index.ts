@@ -23,6 +23,7 @@ export type Directive =
   | Transaction
   | Include
   | Plugin
+  | Option
   | Balance
   | Open
   | Close
@@ -45,6 +46,13 @@ export interface Plugin {
   type: "plugin";
   module: string;
   config?: string;
+  formatting: FormattingInfo;
+}
+
+export interface Option {
+  type: "option";
+  name: string;
+  value: string;
   formatting: FormattingInfo;
 }
 

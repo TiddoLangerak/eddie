@@ -49,6 +49,8 @@ function directiveSummary(d: Directive): HtmlString {
       return html`<span class="directive-summary">${d.filename}</span>`;
     case "plugin":
       return html`<span class="directive-summary">${d.module}${d.config != null ? ` ${d.config}` : ""}</span>`;
+    case "option":
+      return html`<span class="directive-summary">${d.name} = ${d.value}</span>`;
     default:
       return unreachable(d);
   }
@@ -66,6 +68,7 @@ function directiveDate(d: Directive): string {
   switch (d.type) {
     case "include":
     case "plugin":
+    case "option":
       return "";
     default:
       return d.date;

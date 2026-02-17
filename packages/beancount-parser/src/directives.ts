@@ -15,6 +15,7 @@ import type {
   Include,
   Note,
   Open,
+  Option,
   Pad,
   Plugin,
   Posting,
@@ -301,9 +302,24 @@ const plugin: Parser<Plugin> = map(
   }),
 );
 
+const option: Parser<Option> = map(
+  commentedLine(
+    string("option"),
+    afterWhitespace(quotedString),
+    afterWhitespace(quotedString),
+  ),
+  ({ parts: [, name, value], comment }) => ({
+    type: "option",
+    name,
+    value,
+    formatting: { header: [], footer: [], inlineComment: comment },
+  }),
+);
+
 export const directive: Parser<Directive> = first<Directive>(
   include,
   plugin,
+  option,
   transaction,
   open,
   close,
