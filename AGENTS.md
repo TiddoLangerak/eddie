@@ -16,6 +16,7 @@
       it('does something else', () => {})
   })
   ```
+- **Structure code for reading top-to-bottom.**. E.g. generally speaking we want the "main" functions at the top, and helper function below. I.e. functions are used before defined.
 
 ---
 
