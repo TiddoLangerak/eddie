@@ -1,3 +1,4 @@
+import type { Dirent } from "node:fs";
 import { readFile, readdir, writeFile } from "node:fs/promises";
 import { join, relative, resolve } from "node:path";
 import { formatBeancountFile } from "@tiddo/beancount-formatter";
@@ -32,18 +33,11 @@ function isBeancountFile(name: string): boolean {
   return name.endsWith(".bean") || name.endsWith(".beancount");
 }
 
-function relativePathFromDirent(
-  workspace: string,
-  e: { name: string; path?: string; parentPath?: string },
-): string {
+function relativePathFromDirent(workspace: string, entry: Dirent): string {
   const fullPath =
-    e.path ?? (e.parentPath ? `${e.parentPath}/${e.name}` : e.name);
-  const rel = fullPath.startsWith(workspace)
-    ? relative(workspace, fullPath)
-    : fullPath.startsWith("./")
-      ? fullPath.slice(2)
-      : fullPath;
-  return rel.split("\\").join("/");
+    entry.path ??
+    (entry.parentPath ? `${entry.parentPath}/${entry.name}` : entry.name);
+  return relative(workspace, fullPath);
 }
 
 export async function getBeancountFiles(workspace: string): Promise<string[]> {
@@ -52,9 +46,9 @@ export async function getBeancountFiles(workspace: string): Promise<string[]> {
     withFileTypes: true,
   });
   const relativePaths = entries
-    .filter((e) => e.isFile() && isBeancountFile(e.name))
-    .map((e) => relativePathFromDirent(workspace, e))
-    .filter((path) => !path.includes("..") && isValidPath(workspace, path));
+    .filter((entry) => entry.isFile() && isBeancountFile(entry.name))
+    .map((entry) => relativePathFromDirent(workspace, entry))
+    .filter((path) => isValidPath(workspace, path));
   return [...relativePaths].sort();
 }
 
