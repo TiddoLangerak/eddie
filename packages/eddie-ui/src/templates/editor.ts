@@ -1,9 +1,41 @@
-import { type HtmlString, html } from "../html.ts";
+import type { BeancountFile } from "@Tiddo/beancount-types";
+import type { ParseError } from "@Tiddo/beancount-parser";
+import { HtmlString, html, joining } from "../html.ts";
+import { directivesView } from "./directivesView.ts";
 
-export function editor(
-  currentFile: string | null,
-  content: string,
-): HtmlString {
+export type EditorState =
+  | { tag: "parsed"; value: BeancountFile }
+  | { tag: "parseError"; error: ParseError; content: string }
+  | null;
+
+function parseErrorSourceView(content: string, error: ParseError): HtmlString {
+  const lines = content.split("\n");
+  const errorLineIndex = Math.max(0, Math.min(error.line - 1, lines.length - 1));
+  const lineContent = lines[errorLineIndex] ?? "";
+  const columnIndex = Math.max(0, Math.min(error.column - 1, lineContent.length));
+
+  const lineParts = lines.map((line, i) => {
+    const lineNo = i + 1;
+    const isErrorLine = i === errorLineIndex;
+    if (!isErrorLine) {
+      return html`<div class="source-line" data-line="${String(lineNo)}"><span class="line-no">${String(lineNo)}</span>${line}</div>`;
+    }
+    const before = lineContent.slice(0, columnIndex);
+    const atColumn = lineContent.slice(columnIndex, columnIndex + 1) || " ";
+    const after = lineContent.slice(columnIndex + 1);
+    return html`<div class="source-line error-line" data-line="${String(lineNo)}"><span class="line-no">${String(lineNo)}</span>${before}<span class="error-column">${atColumn}</span>${after}</div>`;
+  });
+
+  const linesHtml = lineParts.reduce(joining(html`\n`), HtmlString.EMPTY);
+  return html`
+		<div class="parse-error-view">
+			<div class="message error">${error.message} (line ${String(error.line)}, column ${String(error.column)})</div>
+			<pre class="parse-error-source"><code>${linesHtml}</code></pre>
+		</div>
+	`;
+}
+
+export function editor(currentFile: string | null, state: EditorState): HtmlString {
   if (!currentFile) {
     return html`
 			<main class="editor-container">
@@ -12,20 +44,34 @@ export function editor(
 		`;
   }
 
+  if (state === null) {
+    return html`
+			<main class="editor-container">
+				<div class="editor-header">
+					<span class="current-file">${currentFile}</span>
+				</div>
+				<p class="no-file">No content.</p>
+			</main>
+		`;
+  }
+
+  if (state.tag === "parseError") {
+    return html`
+			<main class="editor-container">
+				<div class="editor-header">
+					<span class="current-file">${currentFile}</span>
+				</div>
+				${parseErrorSourceView(state.content, state.error)}
+			</main>
+		`;
+  }
+
   return html`
 		<main class="editor-container">
 			<div class="editor-header">
-				<span class="current-file">Editing: ${currentFile}</span>
+				<span class="current-file">${currentFile}</span>
 			</div>
-			<form method="POST">
-				<input type="hidden" name="file" value="${currentFile}">
-				<textarea name="content" id="editor">${content}</textarea>
-				<div class="controls">
-					<button type="submit" formaction="/save">Save</button>
-					<button type="submit" formaction="/parse">Parse</button>
-					<button type="submit" formaction="/format">Format</button>
-				</div>
-			</form>
+			${directivesView(state.value)}
 		</main>
 	`;
 }

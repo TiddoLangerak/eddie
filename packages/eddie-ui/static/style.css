@@ -30,6 +30,7 @@
   --editor-min-height: 400px;
 
   /* Border radius */
+  --radius-xs: 2px;
   --radius-sm: 4px;
   --radius-md: 8px;
 
@@ -219,4 +220,110 @@ button:hover {
 .no-file {
   color: var(--color-text-muted);
   font-style: italic;
+}
+
+.directives-view {
+  overflow-x: auto;
+  min-height: var(--editor-min-height);
+}
+
+.directives-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-code-sm);
+  font-family: var(--font-mono);
+}
+
+.directives-table th,
+.directives-table td {
+  padding: var(--spacing-sm) var(--spacing-md);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+}
+
+.directives-table thead th {
+  background: var(--color-header-bg);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.directives-table .col-date {
+  width: 7rem;
+  white-space: nowrap;
+}
+
+.directives-table .col-type {
+  width: 6rem;
+  white-space: nowrap;
+}
+
+.directive-row:hover {
+  background: var(--color-hover-bg);
+}
+
+.posting-row .posting-cell {
+  padding-left: var(--spacing-xl);
+  color: var(--color-text-muted);
+  font-size: 0.9em;
+  border-bottom-color: var(--color-border);
+}
+
+.directive-type-txn .directive-date {
+  font-weight: 500;
+}
+
+.directives-empty {
+  color: var(--color-text-muted);
+  font-style: italic;
+  padding: var(--spacing-lg);
+}
+
+.parse-error-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.parse-error-view .message.error {
+  flex-shrink: 0;
+}
+
+.parse-error-source {
+  margin: 0;
+  padding: var(--spacing-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  overflow: auto;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-code-sm);
+  line-height: 1.5;
+  min-height: var(--editor-min-height);
+}
+
+.parse-error-source code {
+  display: block;
+}
+
+.source-line {
+  white-space: pre;
+}
+
+.source-line .line-no {
+  display: inline-block;
+  width: 3em;
+  margin-right: var(--spacing-md);
+  color: var(--color-text-muted);
+  user-select: none;
+}
+
+.source-line.error-line {
+  background: var(--color-error-bg);
+}
+
+.source-line .error-column {
+  background: var(--color-error-text);
+  color: var(--color-surface);
+  border-radius: var(--radius-xs);
 }

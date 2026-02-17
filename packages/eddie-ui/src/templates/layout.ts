@@ -1,3 +1,4 @@
+import type { EditorState } from "./editor.ts";
 import { HtmlString, html } from "../html.ts";
 import { editor } from "./editor.ts";
 import { fileBrowser } from "./fileBrowser.ts";
@@ -6,8 +7,8 @@ export function layout(
   workspace: string,
   files: string[],
   currentFile: string | null,
-  content: string,
   message: HtmlString = HtmlString.EMPTY,
+  state: EditorState = null,
 ): HtmlString {
   return html`<!DOCTYPE html>
 		<html lang="en">
@@ -23,7 +24,7 @@ export function layout(
 					${message}
 					<div class="layout">
 						${fileBrowser(workspace, files, currentFile)}
-						${editor(currentFile, content)}
+						${editor(currentFile, state)}
 					</div>
 				</div>
 			</body>

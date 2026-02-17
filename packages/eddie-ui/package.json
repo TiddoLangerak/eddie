@@ -23,6 +23,7 @@
   "dependencies": {
     "@Tiddo/beancount-types": "*",
     "@Tiddo/beancount-parser": "*",
-    "@Tiddo/beancount-formatter": "*"
+    "@Tiddo/beancount-formatter": "*",
+    "@Tiddo/eddie-utils": "*"
   }
 }
