@@ -1,3 +1,4 @@
+import { unreachable } from "@tiddo/eddie-utils/unreachable";
 import { HtmlString, html, joining } from "../html.ts";
 
 type TreeEntry =
@@ -52,11 +53,20 @@ function sortEntries(entries: TreeEntry[]): void {
   }
 }
 
-function hasBeancountInSubtree(entry: TreeEntry): boolean {
-  if (entry.type === "file") return entry.isBeancount;
-  const hasBeancount = entry.children.some(hasBeancountInSubtree);
+function setBeancountDescendant(entry: TreeEntry) {
+  if (entry.type === "file") return;
+  entry.children.forEach(setBeancountDescendant);
+  const hasBeancount = entry.children.some((child) => {
+    switch (child.type) {
+      case "file":
+        return child.isBeancount;
+      case "folder":
+        return child.hasBeancountDescendant;
+      default:
+        unreachable(child);
+    }
+  });
   entry.hasBeancountDescendant = hasBeancount;
-  return hasBeancount;
 }
 
 function buildFileTree(
@@ -68,7 +78,7 @@ function buildFileTree(
   }
   sortEntries(root);
   for (const entry of root) {
-    hasBeancountInSubtree(entry);
+    setBeancountDescendant(entry);
   }
   return root;
 }

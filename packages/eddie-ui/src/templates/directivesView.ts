@@ -12,13 +12,19 @@ function formatAmount(a: Amount): string {
   return `${a.number} ${a.commodity}`;
 }
 
-function resolveIncludePath(currentFile: string | null, filename: string): string {
+function resolveIncludePath(
+  currentFile: string | null,
+  filename: string,
+): string {
   if (!currentFile) return filename;
   const resolved = join(dirname(currentFile), filename);
   return resolved.replace(/\\/g, "/");
 }
 
-function directiveSummary(d: Directive, currentFile: string | null): HtmlString {
+function directiveSummary(
+  d: Directive,
+  currentFile: string | null,
+): HtmlString {
   switch (d.type) {
     case "transaction": {
       const payeeNarration =
@@ -84,7 +90,11 @@ function directiveDate(d: Directive): string {
   }
 }
 
-function directiveRow(d: Directive, index: number, currentFile: string | null): HtmlString {
+function directiveRow(
+  d: Directive,
+  index: number,
+  currentFile: string | null,
+): HtmlString {
   const typeLabel = d.type === "transaction" ? "txn" : d.type;
   const summary = directiveSummary(d, currentFile);
   const base = html`<tr class="directive-row directive-type-${typeLabel}" data-directive-index="${String(index)}">
