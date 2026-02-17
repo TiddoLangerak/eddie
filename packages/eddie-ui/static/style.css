@@ -426,6 +426,15 @@ button:hover {
   background: var(--color-hover-bg);
 }
 
+.directive-details .include-link {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+.directive-details .include-link:hover {
+  color: var(--color-primary-hover);
+  text-decoration: underline;
+}
+
 .posting-row .posting-cell {
   padding-left: var(--spacing-md);
   color: var(--color-text-muted);

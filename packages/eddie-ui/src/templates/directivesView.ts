@@ -1,3 +1,4 @@
+import { dirname, join } from "node:path";
 import type {
   Amount,
   BeancountFile,
@@ -11,7 +12,13 @@ function formatAmount(a: Amount): string {
   return `${a.number} ${a.commodity}`;
 }
 
-function directiveSummary(d: Directive): HtmlString {
+function resolveIncludePath(currentFile: string | null, filename: string): string {
+  if (!currentFile) return filename;
+  const resolved = join(dirname(currentFile), filename);
+  return resolved.replace(/\\/g, "/");
+}
+
+function directiveSummary(d: Directive, currentFile: string | null): HtmlString {
   switch (d.type) {
     case "transaction": {
       const payeeNarration =
@@ -45,8 +52,10 @@ function directiveSummary(d: Directive): HtmlString {
       return html`<span class="directive-summary">${d.name}</span>`;
     case "custom":
       return html`<span class="directive-summary">${d.customType} ${d.values.map(String).join(" ")}</span>`;
-    case "include":
-      return html`<span class="directive-summary">${d.filename}</span>`;
+    case "include": {
+      const href = `?file=${encodeURIComponent(resolveIncludePath(currentFile, d.filename))}`;
+      return html`<span class="directive-summary"><a href="${href}" class="include-link">${d.filename}</a></span>`;
+    }
     case "plugin":
       return html`<span class="directive-summary">${d.module}${d.config != null ? ` ${d.config}` : ""}</span>`;
     case "option":
@@ -75,9 +84,9 @@ function directiveDate(d: Directive): string {
   }
 }
 
-function directiveRow(d: Directive, index: number): HtmlString {
+function directiveRow(d: Directive, index: number, currentFile: string | null): HtmlString {
   const typeLabel = d.type === "transaction" ? "txn" : d.type;
-  const summary = directiveSummary(d);
+  const summary = directiveSummary(d, currentFile);
   const base = html`<tr class="directive-row directive-type-${typeLabel}" data-directive-index="${String(index)}">
 		<td class="directive-date">${directiveDate(d)}</td>
 		<td class="directive-type">${typeLabel}</td>
@@ -95,9 +104,12 @@ function directiveRow(d: Directive, index: number): HtmlString {
   return base;
 }
 
-export function directivesView(parsed: BeancountFile): HtmlString {
+export function directivesView(
+  parsed: BeancountFile,
+  currentFile: string | null = null,
+): HtmlString {
   const rows = parsed.directives
-    .map((d, i) => directiveRow(d, i))
+    .map((d, i) => directiveRow(d, i, currentFile))
     .reduce(joining(html`\n`), HtmlString.EMPTY);
 
   if (parsed.directives.length === 0) {

@@ -96,7 +96,7 @@ export function editor(
   return html`
 		<main class="editor-container">
 			${editorHeader(currentFile)}
-			${directivesView(state.value)}
+			${directivesView(state.value, currentFile)}
 		</main>
 	`;
 }
