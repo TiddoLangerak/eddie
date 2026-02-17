@@ -138,7 +138,14 @@ export const postingMetadataLine: Parser<Metadata> = map(
   ([, entry]) => entry,
 );
 
-export const cost: Parser<Amount> = between(string("{"), string("}"), amount);
+export const cost: Parser<Amount> = map(
+  between(
+    string("{"),
+    string("}"),
+    sequence(optionalWhitespace, amount, optionalWhitespace),
+  ),
+  ([, amt]) => amt,
+);
 
 export const price: Parser<Amount> = map(
   sequence(string("@"), optionalWhitespace, amount),

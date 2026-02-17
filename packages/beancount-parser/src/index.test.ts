@@ -41,6 +41,26 @@ describe("parseBeancount", () => {
     assert.equal(dir.postings[1].amount?.number, "100");
   });
 
+  it("parses posting with cost and price (spaces in cost)", () => {
+    const input = trimIndent(`
+      2024-01-15 * ""
+        Assets:OU:Instruments:Lightyear:VUSA:EUR -48 VUSA { 110.850 EUR } @ 112.032 EUR
+    `);
+    const result = parseBeancount(input);
+    assert.equal(result.directives.length, 1);
+    const dir = result.directives[0];
+    assert.equal(dir.type, "transaction");
+    assert.equal(dir.postings.length, 1);
+    const p = dir.postings[0];
+    assert.equal(p.account, "Assets:OU:Instruments:Lightyear:VUSA:EUR");
+    assert.equal(p.amount?.number, "-48");
+    assert.equal(p.amount?.commodity, "VUSA");
+    assert.equal(p.cost?.number, "110.850");
+    assert.equal(p.cost?.commodity, "EUR");
+    assert.equal(p.price?.number, "112.032");
+    assert.equal(p.price?.commodity, "EUR");
+  });
+
   it("parses open and close directives", () => {
     const input = trimIndent(`
       2024-01-01 open Assets:Bank USD
