@@ -38,7 +38,7 @@ export const date: Parser<string> = regex(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
 
 export const commodity: Parser<string> = regex(/[A-Z0-9-]+/);
 
-const accountSegment = regex(/[A-Z][A-Za-z0-9_-]*/);
+const accountSegment = regex(/[A-Za-z0-9_-]*/);
 export const account: Parser<string> = map(
   sepByAtLeastOnce(accountSegment, string(":")),
   (parts) => parts.join(":"),
