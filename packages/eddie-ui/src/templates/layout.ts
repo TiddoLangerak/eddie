@@ -3,9 +3,11 @@ import type { EditorState } from "./editor.ts";
 import { editor } from "./editor.ts";
 import { fileBrowser } from "./fileBrowser.ts";
 
+import type { WorkspaceFile } from "../beancountController.ts";
+
 export function layout(
   workspace: string,
-  files: string[],
+  files: WorkspaceFile[],
   currentFile: string | null,
   message: HtmlString = HtmlString.EMPTY,
   state: EditorState = null,
@@ -27,6 +29,7 @@ export function layout(
 						${editor(currentFile, state)}
 					</div>
 				</div>
+				<script src="/static/file-browser.js"></script>
 			</body>
 		</html>`;
 }

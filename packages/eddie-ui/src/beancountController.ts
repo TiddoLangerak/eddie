@@ -40,16 +40,28 @@ function relativePathFromDirent(workspace: string, entry: Dirent): string {
   return relative(workspace, fullPath);
 }
 
-export async function getBeancountFiles(workspace: string): Promise<string[]> {
+export type WorkspaceFile = { path: string; isBeancount: boolean };
+
+export async function getWorkspaceFiles(
+  workspace: string,
+): Promise<WorkspaceFile[]> {
   const entries = await readdir(workspace, {
     recursive: true,
     withFileTypes: true,
   });
-  const relativePaths = entries
-    .filter((entry) => entry.isFile() && isBeancountFile(entry.name))
-    .map((entry) => relativePathFromDirent(workspace, entry))
-    .filter((path) => isValidPath(workspace, path));
-  return [...relativePaths].sort();
+  const files = entries
+    .filter((entry) => entry.isFile())
+    .map((entry) => ({
+      path: relativePathFromDirent(workspace, entry),
+      isBeancount: isBeancountFile(entry.name),
+    }))
+    .filter((f) => isValidPath(workspace, f.path));
+  return [...files].sort((a, b) => a.path.localeCompare(b.path));
+}
+
+export async function getBeancountFiles(workspace: string): Promise<string[]> {
+  const files = await getWorkspaceFiles(workspace);
+  return files.filter((f) => f.isBeancount).map((f) => f.path);
 }
 
 export async function handleView(
@@ -57,7 +69,7 @@ export async function handleView(
   file: string | null,
   saved = false,
 ): Promise<HtmlString> {
-  const files = await getBeancountFiles(ctx.workspace);
+  const files = await getWorkspaceFiles(ctx.workspace);
 
   let content = "";
   if (file && isValidPath(ctx.workspace, file)) {
@@ -77,7 +89,7 @@ export async function handleSave(
   file: string | string[] | undefined,
   content: string | string[] | undefined,
 ): Promise<{ redirect: string } | { html: HtmlString }> {
-  const files = await getBeancountFiles(ctx.workspace);
+  const files = await getWorkspaceFiles(ctx.workspace);
 
   if (
     typeof file !== "string" ||
@@ -115,7 +127,7 @@ export async function handleParse(
   file: string | string[] | undefined,
   content: string | string[] | undefined,
 ): Promise<HtmlString> {
-  const files = await getBeancountFiles(ctx.workspace);
+  const files = await getWorkspaceFiles(ctx.workspace);
 
   if (
     typeof file !== "string" ||
@@ -152,7 +164,7 @@ export async function handleFormat(
   file: string,
   content: string,
 ): Promise<HtmlString> {
-  const files = await getBeancountFiles(ctx.workspace);
+  const files = await getWorkspaceFiles(ctx.workspace);
 
   try {
     const parsed = parseBeancount(content);

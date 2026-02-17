@@ -5,7 +5,8 @@ import { directivesView } from "./directivesView.ts";
 
 function pathBreadcrumbs(path: string): HtmlString {
   const segments = path.split("/").filter(Boolean);
-  if (segments.length === 0) return html`<span class="segment">${path || "/"}</span>`;
+  if (segments.length === 0)
+    return html`<span class="segment">${path || "/"}</span>`;
   const parts = segments.flatMap((segment, i) => {
     const isLast = i === segments.length - 1;
     const seg = html`<span class="segment">${segment}</span>`;

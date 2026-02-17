@@ -92,6 +92,7 @@ h1 {
 .file-browser {
   border-right: 1px solid var(--color-border);
   padding-right: var(--spacing-md);
+  padding-left: var(--spacing-sm);
   min-width: 0;
 }
 
@@ -108,35 +109,173 @@ h1 {
   word-break: break-all;
 }
 
-.file-list {
+.file-browser-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.file-browser-toggle input {
+  cursor: pointer;
+}
+
+.file-tree:not(.show-other-files) .file-tree-file-other {
+  display: none;
+}
+
+.file-tree:not(.show-other-files) .file-tree-folder:not(.file-tree-folder-has-beancount) {
+  display: none;
+}
+
+.file-tree-file-other .file-tree-name,
+.file-tree-folder:not(.file-tree-folder-has-beancount) .file-tree-name {
+  color: var(--color-text-muted);
+}
+
+.file-tree-file-other .file-tree-name {
+  cursor: default;
+}
+
+.file-tree-file-other .file-tree-name:hover {
+  background: transparent;
+}
+
+.file-tree {
+  --tree-indent: 0.3rem;
+  --tree-icon-width: 0.75rem;
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
-.file-list li {
-  margin-bottom: var(--spacing-xs);
+.file-tree-folder-children {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  padding-left: var(--tree-indent);
 }
 
-.file-list li.active {
-  background: var(--color-active-bg);
-  border-radius: var(--radius-sm);
+.file-tree-folder,
+.file-tree-file {
+  margin-bottom: 0;
+  line-height: 1.25;
 }
 
-.file-list a {
-  display: block;
-  padding: var(--spacing-sm);
-  text-decoration: none;
-  color: var(--color-text);
-  border-radius: var(--radius-sm);
+.file-tree-folder {
+  display: flex;
+  flex-direction: column;
+}
+
+.file-tree-row {
+  display: flex;
+  align-items: center;
+  min-height: 1.25rem;
+}
+
+.file-tree-icon {
+  width: var(--tree-icon-width);
+  margin-right: 4px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.file-tree-name {
+  flex: 1;
+  min-width: 0;
+  padding: 2px var(--spacing-xs) 2px 0;
+  font-size: var(--font-size-sm);
   word-break: break-all;
+  color: var(--color-text);
 }
 
-.file-list a:hover {
+.file-tree-folder-header {
+  cursor: pointer;
+}
+
+.file-tree-folder-header .file-tree-name {
+  font-weight: 500;
+  user-select: none;
+}
+
+.file-tree-folder-toggle {
+  padding: 2px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: 0.6rem;
+  line-height: 1;
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.file-tree-folder-toggle:hover {
+  color: var(--color-text);
   background: var(--color-hover-bg);
 }
 
-.file-list li.active a:hover {
+.file-tree-chevron {
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+
+.file-tree-folder.collapsed .file-tree-chevron {
+  transform: rotate(-90deg);
+}
+
+.file-tree-folder.collapsed > .file-tree-folder-children {
+  display: none;
+}
+
+.file-tree-folder,
+.file-tree-file {
+  padding-left: calc(var(--depth, 0) * var(--tree-indent));
+}
+
+.file-tree-folder[data-depth="0"] { --depth: 0; }
+.file-tree-folder[data-depth="1"] { --depth: 1; }
+.file-tree-folder[data-depth="2"] { --depth: 2; }
+.file-tree-folder[data-depth="3"] { --depth: 3; }
+.file-tree-folder[data-depth="4"] { --depth: 4; }
+.file-tree-folder[data-depth="5"] { --depth: 5; }
+.file-tree-file[data-depth="0"] { --depth: 0; }
+.file-tree-file[data-depth="1"] { --depth: 1; }
+.file-tree-file[data-depth="2"] { --depth: 2; }
+.file-tree-file[data-depth="3"] { --depth: 3; }
+.file-tree-file[data-depth="4"] { --depth: 4; }
+.file-tree-file[data-depth="5"] { --depth: 5; }
+
+.file-tree-file.active {
   background: var(--color-active-bg);
+  border-radius: var(--radius-sm);
+}
+
+.file-tree-file .file-tree-name {
+  display: block;
+  text-decoration: none;
+  color: var(--color-text);
+  border-radius: var(--radius-sm);
+}
+
+.file-tree-file .file-tree-name:hover {
+  background: var(--color-hover-bg);
+}
+
+.file-tree-file.active .file-tree-name:hover {
+  background: var(--color-active-bg);
+}
+
+.file-tree-file.file-tree-file-other .file-tree-name {
+  color: var(--color-text-muted);
 }
 
 .editor-container {
