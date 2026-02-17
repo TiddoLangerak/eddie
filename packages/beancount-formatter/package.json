@@ -1,5 +1,5 @@
 {
-  "name": "@Tiddo/beancount-formatter",
+  "name": "@tiddo/beancount-formatter",
   "version": "0.0.0",
   "type": "module",
   "exports": {
@@ -20,10 +20,10 @@
     "build": "tsc -b"
   },
   "dependencies": {
-    "@Tiddo/beancount-types": "*",
-    "@Tiddo/eddie-utils": "*"
+    "@tiddo/beancount-types": "*",
+    "@tiddo/eddie-utils": "*"
   },
   "devDependencies": {
-    "@Tiddo/beancount-parser": "*"
+    "@tiddo/beancount-parser": "*"
   }
 }

@@ -18,8 +18,8 @@ import type {
   Price,
   Query,
   Transaction,
-} from "@Tiddo/beancount-types";
-import { unreachable } from "@Tiddo/eddie-utils/unreachable";
+} from "@tiddo/beancount-types";
+import { unreachable } from "@tiddo/eddie-utils/unreachable";
 
 /**
  * Formats a BeancountFile object back into a Beancount file string.

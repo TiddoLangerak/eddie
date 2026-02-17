@@ -21,7 +21,7 @@ import type {
   Price,
   Query,
   Transaction,
-} from "@Tiddo/beancount-types";
+} from "@tiddo/beancount-types";
 import {
   first,
   map,

@@ -1,5 +1,5 @@
-import type { BeancountFile } from "@Tiddo/beancount-types";
-import type { ParseError } from "@Tiddo/beancount-parser";
+import type { BeancountFile } from "@tiddo/beancount-types";
+import type { ParseError } from "@tiddo/beancount-parser";
 import { HtmlString, html, joining } from "../html.ts";
 import { directivesView } from "./directivesView.ts";
 

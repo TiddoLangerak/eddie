@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { Awaitable } from "@Tiddo/eddie-utils/async";
+import type { Awaitable } from "@tiddo/eddie-utils/async";
 
 export type RouteHandler = (
   req: IncomingMessage,

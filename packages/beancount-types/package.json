@@ -1,5 +1,5 @@
 {
-  "name": "@Tiddo/beancount-types",
+  "name": "@tiddo/beancount-types",
   "version": "0.0.0",
   "type": "module",
   "main": "./src/index.ts",

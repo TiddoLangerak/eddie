@@ -1,6 +1,6 @@
 import { strict as assert } from "node:assert";
 import { describe, it } from "node:test";
-import type { CommentOrBlank } from "@Tiddo/beancount-types";
+import type { CommentOrBlank } from "@tiddo/beancount-types";
 import { type ParseError, parseBeancount } from "./index.ts";
 
 describe("parseBeancount", () => {

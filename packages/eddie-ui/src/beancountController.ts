@@ -1,8 +1,8 @@
 import { readFile, readdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import { formatBeancountFile } from "@Tiddo/beancount-formatter";
-import { ParseError, parseBeancount } from "@Tiddo/beancount-parser";
-import type { BeancountFile } from "@Tiddo/beancount-types";
+import { formatBeancountFile } from "@tiddo/beancount-formatter";
+import { ParseError, parseBeancount } from "@tiddo/beancount-parser";
+import type { BeancountFile } from "@tiddo/beancount-types";
 import { HtmlString, html } from "./html.ts";
 import type { EditorState } from "./templates/editor.ts";
 import { layout } from "./templates/layout.ts";

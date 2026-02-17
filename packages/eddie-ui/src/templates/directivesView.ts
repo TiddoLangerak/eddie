@@ -3,8 +3,8 @@ import type {
   BeancountFile,
   Directive,
   Posting,
-} from "@Tiddo/beancount-types";
-import { unreachable } from "@Tiddo/eddie-utils/unreachable";
+} from "@tiddo/beancount-types";
+import { unreachable } from "@tiddo/eddie-utils/unreachable";
 import { HtmlString, html, joining } from "../html.ts";
 
 function formatAmount(a: Amount): string {

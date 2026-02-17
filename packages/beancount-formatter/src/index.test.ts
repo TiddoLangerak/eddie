@@ -1,6 +1,6 @@
 import { strict as assert } from "node:assert";
 import { describe, it, test } from "node:test";
-import { parseBeancount } from "@Tiddo/beancount-parser";
+import { parseBeancount } from "@tiddo/beancount-parser";
 import type {
   Balance,
   BeancountFile,
@@ -17,9 +17,9 @@ import type {
   Price,
   Query,
   Transaction,
-} from "@Tiddo/beancount-types";
-import { normalizeLineEndings } from "@Tiddo/eddie-utils/files";
-import { trimIndent } from "@Tiddo/eddie-utils/strings";
+} from "@tiddo/beancount-types";
+import { normalizeLineEndings } from "@tiddo/eddie-utils/files";
+import { trimIndent } from "@tiddo/eddie-utils/strings";
 import { formatBeancountFile } from "./index.ts";
 
 function assertParseFormatIdentity(input: string): void {

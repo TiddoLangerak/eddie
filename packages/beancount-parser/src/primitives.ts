@@ -2,7 +2,7 @@
  * Primitive (compound) parsers building on lexical tokens.
  */
 
-import type { Amount, CommentOrBlank } from "@Tiddo/beancount-types";
+import type { Amount, CommentOrBlank } from "@tiddo/beancount-types";
 import {
   between,
   first,

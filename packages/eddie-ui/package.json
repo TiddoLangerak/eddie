@@ -1,5 +1,5 @@
 {
-  "name": "@Tiddo/eddie-ui",
+  "name": "@tiddo/eddie-ui",
   "version": "0.0.0",
   "type": "module",
   "exports": {
@@ -21,9 +21,9 @@
     "serve": "./serve"
   },
   "dependencies": {
-    "@Tiddo/beancount-types": "*",
-    "@Tiddo/beancount-parser": "*",
-    "@Tiddo/beancount-formatter": "*",
-    "@Tiddo/eddie-utils": "*"
+    "@tiddo/beancount-types": "*",
+    "@tiddo/beancount-parser": "*",
+    "@tiddo/beancount-formatter": "*",
+    "@tiddo/eddie-utils": "*"
   }
 }

@@ -2,8 +2,8 @@ import type {
   BeancountFile,
   CommentOrBlank,
   Directive,
-} from "@Tiddo/beancount-types";
-import { normalizeLineEndings } from "@Tiddo/eddie-utils/files";
+} from "@tiddo/beancount-types";
+import { normalizeLineEndings } from "@tiddo/eddie-utils/files";
 import {
   createState,
   first,
