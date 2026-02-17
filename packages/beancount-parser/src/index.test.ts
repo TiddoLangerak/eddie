@@ -26,19 +26,17 @@ describe("parseBeancount", () => {
     assert.equal(result.directives.length, 1);
     const dir = result.directives[0];
     assert.equal(dir.type, "transaction");
-    if (dir.type === "transaction") {
-      assert.equal(dir.date, "2024-01-15");
-      assert.equal(dir.flag, "*");
-      assert.equal(dir.payee, "Payee");
-      assert.equal(dir.narration, "Narration");
-      assert.equal(dir.postings.length, 2);
-      assert.equal(dir.postings[0].account, "Assets:Bank");
-      assert.ok(dir.postings[0].amount);
-      assert.equal(dir.postings[0].amount?.number, "-100");
-      assert.equal(dir.postings[0].amount?.currency, "USD");
-      assert.equal(dir.postings[1].account, "Expenses:Food");
-      assert.equal(dir.postings[1].amount?.number, "100");
-    }
+    assert.equal(dir.date, "2024-01-15");
+    assert.equal(dir.flag, "*");
+    assert.equal(dir.payee, "Payee");
+    assert.equal(dir.narration, "Narration");
+    assert.equal(dir.postings.length, 2);
+    assert.equal(dir.postings[0].account, "Assets:Bank");
+    assert.ok(dir.postings[0].amount);
+    assert.equal(dir.postings[0].amount?.number, "-100");
+    assert.equal(dir.postings[0].amount?.currency, "USD");
+    assert.equal(dir.postings[1].account, "Expenses:Food");
+    assert.equal(dir.postings[1].amount?.number, "100");
   });
 
   it("parses open and close directives", () => {
@@ -48,14 +46,10 @@ describe("parseBeancount", () => {
     const result = parseBeancount(input);
     assert.equal(result.directives.length, 2);
     assert.equal(result.directives[0].type, "open");
-    if (result.directives[0].type === "open") {
-      assert.equal(result.directives[0].account, "Assets:Bank");
-      assert.deepEqual(result.directives[0].currencies, ["USD"]);
-    }
+    assert.equal(result.directives[0].account, "Assets:Bank");
+    assert.deepEqual(result.directives[0].currencies, ["USD"]);
     assert.equal(result.directives[1].type, "close");
-    if (result.directives[1].type === "close") {
-      assert.equal(result.directives[1].account, "Assets:Bank");
-    }
+    assert.equal(result.directives[1].account, "Assets:Bank");
   });
 
   it("parses balance directive", () => {
@@ -63,11 +57,9 @@ describe("parseBeancount", () => {
     const result = parseBeancount(input);
     assert.equal(result.directives.length, 1);
     assert.equal(result.directives[0].type, "balance");
-    if (result.directives[0].type === "balance") {
-      assert.equal(result.directives[0].account, "Assets:Bank");
-      assert.equal(result.directives[0].amount.number, "1000.50");
-      assert.equal(result.directives[0].amount.currency, "USD");
-    }
+    assert.equal(result.directives[0].account, "Assets:Bank");
+    assert.equal(result.directives[0].amount.number, "1000.50");
+    assert.equal(result.directives[0].amount.currency, "USD");
   });
 
   it("parses include directive", () => {
@@ -75,9 +67,7 @@ describe("parseBeancount", () => {
     const result = parseBeancount(input);
     assert.equal(result.directives.length, 1);
     assert.equal(result.directives[0].type, "include");
-    if (result.directives[0].type === "include") {
-      assert.equal(result.directives[0].filename, "ledgers/main.beancount");
-    }
+    assert.equal(result.directives[0].filename, "ledgers/main.beancount");
   });
 
   it("parses plugin directive with and without config", () => {
@@ -87,15 +77,11 @@ plugin "beancount.plugins.other" "some_config"
     const result = parseBeancount(input);
     assert.equal(result.directives.length, 2);
     assert.equal(result.directives[0].type, "plugin");
+    assert.equal(result.directives[0].module, "beancount.plugins.importer");
+    assert.equal(result.directives[0].config, undefined);
     assert.equal(result.directives[1].type, "plugin");
-    if (result.directives[0].type === "plugin") {
-      assert.equal(result.directives[0].module, "beancount.plugins.importer");
-      assert.equal(result.directives[0].config, undefined);
-    }
-    if (result.directives[1].type === "plugin") {
-      assert.equal(result.directives[1].module, "beancount.plugins.other");
-      assert.equal(result.directives[1].config, "some_config");
-    }
+    assert.equal(result.directives[1].module, "beancount.plugins.other");
+    assert.equal(result.directives[1].config, "some_config");
   });
 
   it("parses option directive", () => {
@@ -103,10 +89,8 @@ plugin "beancount.plugins.other" "some_config"
     const result = parseBeancount(input);
     assert.equal(result.directives.length, 1);
     assert.equal(result.directives[0].type, "option");
-    if (result.directives[0].type === "option") {
-      assert.equal(result.directives[0].name, "operating_currency");
-      assert.equal(result.directives[0].value, "USD");
-    }
+    assert.equal(result.directives[0].name, "operating_currency");
+    assert.equal(result.directives[0].value, "USD");
   });
 
   it("parses commodity and price", () => {
@@ -117,11 +101,9 @@ plugin "beancount.plugins.other" "some_config"
     assert.equal(result.directives.length, 2);
     assert.equal(result.directives[0].type, "commodity");
     assert.equal(result.directives[1].type, "price");
-    if (result.directives[1].type === "price") {
-      assert.equal(result.directives[1].currency, "USD");
-      assert.equal(result.directives[1].amount.number, "1.2");
-      assert.equal(result.directives[1].amount.currency, "CAD");
-    }
+    assert.equal(result.directives[1].currency, "USD");
+    assert.equal(result.directives[1].amount.number, "1.2");
+    assert.equal(result.directives[1].amount.currency, "CAD");
   });
 
   it("preserves the footer", () => {
