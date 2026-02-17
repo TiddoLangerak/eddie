@@ -1,6 +1,7 @@
 import { strict as assert } from "node:assert";
 import { describe, it } from "node:test";
 import type { CommentOrBlank } from "@tiddo/beancount-types";
+import { trimIndent } from "@tiddo/eddie-utils/strings";
 import { type ParseError, parseBeancount } from "./index.ts";
 
 describe("parseBeancount", () => {
@@ -18,10 +19,11 @@ describe("parseBeancount", () => {
   });
 
   it("parses a complete transaction", () => {
-    const input = `2024-01-15 * "Payee" "Narration"
-  Assets:Bank  -100 USD
-  Expenses:Food  100 USD
-`;
+    const input = trimIndent(`
+      2024-01-15 * "Payee" "Narration"
+        Assets:Bank  -100 USD
+        Expenses:Food  100 USD
+    `);
     const result = parseBeancount(input);
     assert.equal(result.directives.length, 1);
     const dir = result.directives[0];
@@ -40,9 +42,10 @@ describe("parseBeancount", () => {
   });
 
   it("parses open and close directives", () => {
-    const input = `2024-01-01 open Assets:Bank USD
-2024-12-31 close Assets:Bank
-`;
+    const input = trimIndent(`
+      2024-01-01 open Assets:Bank USD
+      2024-12-31 close Assets:Bank
+    `);
     const result = parseBeancount(input);
     assert.equal(result.directives.length, 2);
     assert.equal(result.directives[0].type, "open");
@@ -87,9 +90,10 @@ include "other.beancount" #shared
   });
 
   it("parses plugin directive with and without config", () => {
-    const input = `plugin "beancount.plugins.importer"
-plugin "beancount.plugins.other" "some_config"
-`;
+    const input = trimIndent(`
+      plugin "beancount.plugins.importer"
+      plugin "beancount.plugins.other" "some_config"
+    `);
     const result = parseBeancount(input);
     assert.equal(result.directives.length, 2);
     assert.equal(result.directives[0].type, "plugin");
@@ -110,9 +114,10 @@ plugin "beancount.plugins.other" "some_config"
   });
 
   it("parses commodity and price", () => {
-    const input = `2024-01-01 commodity USD
-2024-01-01 price USD 1.2 CAD
-`;
+    const input = trimIndent(`
+      2024-01-01 commodity USD
+      2024-01-01 price USD 1.2 CAD
+    `);
     const result = parseBeancount(input);
     assert.equal(result.directives.length, 2);
     assert.equal(result.directives[0].type, "commodity");
@@ -123,9 +128,10 @@ plugin "beancount.plugins.other" "some_config"
   });
 
   it("preserves the footer", () => {
-    const input = `2024-01-01 open Assets:Bank
-; footer
-`;
+    const input = trimIndent(`
+      2024-01-01 open Assets:Bank
+      ; footer
+    `);
     const file = parseBeancount(input);
     assert.equal(file.directives.length, 1);
     assert.ok(
