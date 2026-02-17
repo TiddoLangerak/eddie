@@ -39,6 +39,8 @@ export type Directive =
 export interface Include {
   type: "include";
   filename: string;
+  tags?: string[];
+  links?: string[];
   formatting: FormattingInfo;
 }
 
@@ -46,6 +48,8 @@ export interface Plugin {
   type: "plugin";
   module: string;
   config?: string;
+  tags?: string[];
+  links?: string[];
   formatting: FormattingInfo;
 }
 
@@ -53,6 +57,8 @@ export interface Option {
   type: "option";
   name: string;
   value: string;
+  tags?: string[];
+  links?: string[];
   formatting: FormattingInfo;
 }
 
@@ -89,6 +95,8 @@ export interface Balance {
   date: string;
   account: string;
   amount: Amount;
+  tags?: string[];
+  links?: string[];
   formatting: FormattingInfo;
 }
 
@@ -98,6 +106,8 @@ export interface Open {
   account: string;
   commodities: string[];
   booking?: string;
+  tags?: string[];
+  links?: string[];
   formatting: FormattingInfo;
 }
 
@@ -105,6 +115,8 @@ export interface Close {
   type: "close";
   date: string;
   account: string;
+  tags?: string[];
+  links?: string[];
   formatting: FormattingInfo;
 }
 
@@ -112,6 +124,8 @@ export interface Commodity {
   type: "commodity";
   date: string;
   commodity: string;
+  tags?: string[];
+  links?: string[];
   formatting: FormattingInfo;
 }
 
@@ -120,6 +134,8 @@ export interface Pad {
   date: string;
   account: string;
   sourceAccount: string;
+  tags?: string[];
+  links?: string[];
   formatting: FormattingInfo;
 }
 
@@ -128,6 +144,8 @@ export interface Note {
   date: string;
   account: string;
   comment: string;
+  tags?: string[];
+  links?: string[];
   formatting: FormattingInfo;
 }
 
@@ -136,6 +154,8 @@ export interface Document {
   date: string;
   account: string;
   filename: string;
+  tags?: string[];
+  links?: string[];
   formatting: FormattingInfo;
 }
 
@@ -144,6 +164,8 @@ export interface Price {
   date: string;
   commodity: string;
   amount: Amount;
+  tags?: string[];
+  links?: string[];
   formatting: FormattingInfo;
 }
 
@@ -152,6 +174,8 @@ export interface Event {
   date: string;
   eventType: string;
   description: string;
+  tags?: string[];
+  links?: string[];
   formatting: FormattingInfo;
 }
 
@@ -160,6 +184,8 @@ export interface Query {
   date: string;
   name: string;
   queryString: string;
+  tags?: string[];
+  links?: string[];
   formatting: FormattingInfo;
 }
 
@@ -168,5 +194,7 @@ export interface Custom {
   date: string;
   customType: string;
   values: unknown[];
+  tags?: string[];
+  links?: string[];
   formatting: FormattingInfo;
 }

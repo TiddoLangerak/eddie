@@ -62,6 +62,22 @@ describe("parseBeancount", () => {
     assert.equal(result.directives[0].amount.commodity, "USD");
   });
 
+  it("parses directives with tags and links in header", () => {
+    const input = `2024-01-31 balance Assets:Bank 1000 USD #audit ^ref-123
+2024-01-01 open Assets:Bank #main
+include "other.beancount" #shared
+`;
+    const result = parseBeancount(input);
+    assert.equal(result.directives.length, 3);
+    assert.equal(result.directives[0].type, "balance");
+    assert.deepEqual(result.directives[0].tags, ["audit"]);
+    assert.deepEqual(result.directives[0].links, ["ref-123"]);
+    assert.equal(result.directives[1].type, "open");
+    assert.deepEqual(result.directives[1].tags, ["main"]);
+    assert.equal(result.directives[2].type, "include");
+    assert.deepEqual(result.directives[2].tags, ["shared"]);
+  });
+
   it("parses include directive", () => {
     const input = 'include "ledgers/main.beancount"\n';
     const result = parseBeancount(input);

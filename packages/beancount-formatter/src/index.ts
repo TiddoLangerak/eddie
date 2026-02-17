@@ -135,10 +135,7 @@ function formatTransaction(txn: Transaction): string {
 
   parts.push(quoted(txn.narration));
 
-  const tags = txn.tags?.map((tag) => `#${tag}`) ?? [];
-  const links = txn.links?.map((link) => `^${link}`) ?? [];
-
-  const headerLine = [...parts, ...tags, ...links].join(" ");
+  const headerLine = appendTagsAndLinks(parts.join(" "), txn.tags, txn.links);
 
   const metadataHeaderLines =
     txn.metadataHeader?.map((item) => `  ${formatCommentOrBlank(item)}`) ?? [];
@@ -203,7 +200,11 @@ function formatPosting(posting: Posting): string {
 }
 
 function formatBalance(balance: Balance): string {
-  return `${balance.date} balance ${balance.account} ${formatAmount(balance.amount)}`;
+  return appendTagsAndLinks(
+    `${balance.date} balance ${balance.account} ${formatAmount(balance.amount)}`,
+    balance.tags,
+    balance.links,
+  );
 }
 
 function formatOpen(open: Open): string {
@@ -217,65 +218,120 @@ function formatOpen(open: Open): string {
     result += ` ${quoted(open.booking)}`;
   }
 
-  return result;
+  return appendTagsAndLinks(result, open.tags, open.links);
 }
 
 function formatClose(close: Close): string {
-  return `${close.date} close ${close.account}`;
+  return appendTagsAndLinks(
+    `${close.date} close ${close.account}`,
+    close.tags,
+    close.links,
+  );
 }
 
 function formatCommodity(commodity: Commodity): string {
-  return `${commodity.date} commodity ${commodity.commodity}`;
+  return appendTagsAndLinks(
+    `${commodity.date} commodity ${commodity.commodity}`,
+    commodity.tags,
+    commodity.links,
+  );
 }
 
 function formatInclude(include: Include): string {
-  return `include ${quoted(include.filename)}`;
+  return appendTagsAndLinks(
+    `include ${quoted(include.filename)}`,
+    include.tags,
+    include.links,
+  );
 }
 
 function formatPlugin(plugin: Plugin): string {
   const base = `plugin ${quoted(plugin.module)}`;
-  return plugin.config !== undefined
-    ? `${base} ${quoted(plugin.config)}`
-    : base;
+  const line =
+    plugin.config !== undefined ? `${base} ${quoted(plugin.config)}` : base;
+  return appendTagsAndLinks(line, plugin.tags, plugin.links);
 }
 
 function formatOption(option: Option): string {
-  return `option ${quoted(option.name)} ${quoted(option.value)}`;
+  return appendTagsAndLinks(
+    `option ${quoted(option.name)} ${quoted(option.value)}`,
+    option.tags,
+    option.links,
+  );
 }
 
 function formatPad(pad: Pad): string {
-  return `${pad.date} pad ${pad.account} ${pad.sourceAccount}`;
+  return appendTagsAndLinks(
+    `${pad.date} pad ${pad.account} ${pad.sourceAccount}`,
+    pad.tags,
+    pad.links,
+  );
 }
 
 function formatNote(note: Note): string {
-  return `${note.date} note ${note.account} ${quoted(note.comment)}`;
+  return appendTagsAndLinks(
+    `${note.date} note ${note.account} ${quoted(note.comment)}`,
+    note.tags,
+    note.links,
+  );
 }
 
 function formatDocument(document: Document): string {
-  return `${document.date} document ${document.account} ${quoted(document.filename)}`;
+  return appendTagsAndLinks(
+    `${document.date} document ${document.account} ${quoted(document.filename)}`,
+    document.tags,
+    document.links,
+  );
 }
 
 function formatPrice(price: Price): string {
-  return `${price.date} price ${price.commodity} ${formatAmount(price.amount)}`;
+  return appendTagsAndLinks(
+    `${price.date} price ${price.commodity} ${formatAmount(price.amount)}`,
+    price.tags,
+    price.links,
+  );
 }
 
 function formatEvent(event: Event): string {
-  return `${event.date} event ${quoted(event.eventType)} ${quoted(event.description)}`;
+  return appendTagsAndLinks(
+    `${event.date} event ${quoted(event.eventType)} ${quoted(event.description)}`,
+    event.tags,
+    event.links,
+  );
 }
 
 function formatQuery(query: Query): string {
-  return `${query.date} query ${quoted(query.name)} ${quoted(query.queryString)}`;
+  return appendTagsAndLinks(
+    `${query.date} query ${quoted(query.name)} ${quoted(query.queryString)}`,
+    query.tags,
+    query.links,
+  );
 }
 
 function formatCustom(custom: Custom): string {
   const values = custom.values
     .map((v: unknown) => formatCustomValue(v))
     .join(" ");
-  return `${custom.date} custom ${quoted(custom.customType)} ${values}`;
+  return appendTagsAndLinks(
+    `${custom.date} custom ${quoted(custom.customType)} ${values}`,
+    custom.tags,
+    custom.links,
+  );
 }
 
 function formatAmount(amount: Amount): string {
   return `${amount.number} ${amount.commodity}`;
+}
+
+function appendTagsAndLinks(
+  line: string,
+  tags?: string[],
+  links?: string[],
+): string {
+  const tagStrs = tags?.map((t) => `#${t}`) ?? [];
+  const linkStrs = links?.map((l) => `^${l}`) ?? [];
+  if (tagStrs.length === 0 && linkStrs.length === 0) return line;
+  return [line, ...tagStrs, ...linkStrs].join(" ");
 }
 
 function formatComment(comment: string): string {
