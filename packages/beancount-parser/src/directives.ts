@@ -66,7 +66,13 @@ function directiveHeader<
 >(
   type: TType,
   params: Parser<TData>,
-): Parser<{ type: TType; date: string; formatting: FormattingInfo } & TData> {
+): Parser<{
+  type: TType;
+  date: string;
+  tags?: string[];
+  links?: string[];
+  formatting: FormattingInfo;
+} & TData> {
   return map(
     commentedLine(
       date,
