@@ -3,6 +3,27 @@ import type { BeancountFile } from "@tiddo/beancount-types";
 import { HtmlString, html, joining } from "../html.ts";
 import { directivesView } from "./directivesView.ts";
 
+function pathBreadcrumbs(path: string): HtmlString {
+  const segments = path.split("/").filter(Boolean);
+  if (segments.length === 0) return html`<span class="segment">${path || "/"}</span>`;
+  const parts = segments.flatMap((segment, i) => {
+    const isLast = i === segments.length - 1;
+    const seg = html`<span class="segment">${segment}</span>`;
+    return isLast
+      ? [seg]
+      : [seg, html`<span class="separator" aria-hidden="true">/</span>`];
+  });
+  return parts.reduce((acc, part) => html`${acc}${part}`, HtmlString.EMPTY);
+}
+
+function editorHeader(currentFile: string): HtmlString {
+  return html`
+		<div class="editor-header">
+			<nav class="breadcrumbs" aria-label="File path">${pathBreadcrumbs(currentFile)}</nav>
+		</div>
+	`;
+}
+
 export type EditorState =
   | { tag: "parsed"; value: BeancountFile }
   | { tag: "parseError"; error: ParseError; content: string }
@@ -56,9 +77,7 @@ export function editor(
   if (state === null) {
     return html`
 			<main class="editor-container">
-				<div class="editor-header">
-					<span class="current-file">${currentFile}</span>
-				</div>
+				${editorHeader(currentFile)}
 				<p class="no-file">No content.</p>
 			</main>
 		`;
@@ -67,9 +86,7 @@ export function editor(
   if (state.tag === "parseError") {
     return html`
 			<main class="editor-container">
-				<div class="editor-header">
-					<span class="current-file">${currentFile}</span>
-				</div>
+				${editorHeader(currentFile)}
 				${parseErrorSourceView(state.content, state.error)}
 			</main>
 		`;
@@ -77,9 +94,7 @@ export function editor(
 
   return html`
 		<main class="editor-container">
-			<div class="editor-header">
-				<span class="current-file">${currentFile}</span>
-			</div>
+			${editorHeader(currentFile)}
 			${directivesView(state.value)}
 		</main>
 	`;
