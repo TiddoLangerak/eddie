@@ -34,7 +34,7 @@ describe("parseBeancount", () => {
     assert.equal(dir.postings[0].account, "Assets:Bank");
     assert.ok(dir.postings[0].amount);
     assert.equal(dir.postings[0].amount?.number, "-100");
-    assert.equal(dir.postings[0].amount?.currency, "USD");
+    assert.equal(dir.postings[0].amount?.commodity, "USD");
     assert.equal(dir.postings[1].account, "Expenses:Food");
     assert.equal(dir.postings[1].amount?.number, "100");
   });
@@ -47,7 +47,7 @@ describe("parseBeancount", () => {
     assert.equal(result.directives.length, 2);
     assert.equal(result.directives[0].type, "open");
     assert.equal(result.directives[0].account, "Assets:Bank");
-    assert.deepEqual(result.directives[0].currencies, ["USD"]);
+    assert.deepEqual(result.directives[0].commodities, ["USD"]);
     assert.equal(result.directives[1].type, "close");
     assert.equal(result.directives[1].account, "Assets:Bank");
   });
@@ -59,7 +59,7 @@ describe("parseBeancount", () => {
     assert.equal(result.directives[0].type, "balance");
     assert.equal(result.directives[0].account, "Assets:Bank");
     assert.equal(result.directives[0].amount.number, "1000.50");
-    assert.equal(result.directives[0].amount.currency, "USD");
+    assert.equal(result.directives[0].amount.commodity, "USD");
   });
 
   it("parses include directive", () => {
@@ -101,9 +101,9 @@ plugin "beancount.plugins.other" "some_config"
     assert.equal(result.directives.length, 2);
     assert.equal(result.directives[0].type, "commodity");
     assert.equal(result.directives[1].type, "price");
-    assert.equal(result.directives[1].currency, "USD");
+    assert.equal(result.directives[1].commodity, "USD");
     assert.equal(result.directives[1].amount.number, "1.2");
-    assert.equal(result.directives[1].amount.currency, "CAD");
+    assert.equal(result.directives[1].amount.commodity, "CAD");
   });
 
   it("preserves the footer", () => {

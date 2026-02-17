@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import { run } from "./combinators.ts";
 import {
   account,
-  currency,
+  commodity,
   date,
   flag,
   key,
@@ -21,11 +21,14 @@ describe("lexical", () => {
     assert.equal(r.value, "2024-01-15");
   });
 
-  it("currency parses uppercase", () => {
-    const r = run(currency, "USD");
+  it("commodity parses uppercase and dashes", () => {
+    const r = run(commodity, "USD");
     assert.ok(r.ok);
     assert.equal(r.value, "USD");
-    assert.ok(run(currency, "EUR").ok);
+    assert.ok(run(commodity, "EUR").ok);
+    const withDash = run(commodity, "XAU-USD");
+    assert.ok(withDash.ok);
+    assert.equal(withDash.value, "XAU-USD");
   });
 
   it("account parses hierarchical name", () => {

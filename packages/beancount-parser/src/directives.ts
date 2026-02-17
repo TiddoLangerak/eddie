@@ -37,7 +37,7 @@ import {
   afterOptionalWhitespace,
   afterWhitespace,
   boolean,
-  currency,
+  commodity,
   flag,
   key,
   number,
@@ -182,16 +182,16 @@ const open: Parser<Open> = directiveHeader(
       optional(
         afterWhitespace(
           sepBy(
-            currency,
+            commodity,
             sequence(optionalWhitespace, string(","), optionalWhitespace),
           ),
         ),
       ),
       optional(afterWhitespace(quotedString)),
     ),
-    ([, account, currencies, booking]) => ({
+    ([, account, commodities, booking]) => ({
       account,
-      currencies: currencies ?? [],
+      commodities: commodities ?? [],
       booking,
     }),
   ),
@@ -210,9 +210,9 @@ const balance: Parser<Balance> = directiveHeader(
   ),
 );
 
-const commodity: Parser<Commodity> = directiveHeader(
+const commodityDirective: Parser<Commodity> = directiveHeader(
   "commodity",
-  map(sequence(whitespace, currency), ([, currency]) => ({ currency })),
+  map(sequence(whitespace, commodity), ([, commodity]) => ({ commodity })),
 );
 
 const pad: Parser<Pad> = directiveHeader(
@@ -242,8 +242,8 @@ const document: Parser<Document> = directiveHeader(
 const priceDirective: Parser<Price> = directiveHeader(
   "price",
   map(
-    sequence(whitespace, currency, whitespace, amount),
-    ([, currency, , amount]) => ({ currency, amount }),
+    sequence(whitespace, commodity, whitespace, amount),
+    ([, commodity, , amount]) => ({ commodity, amount }),
   ),
 );
 
@@ -324,7 +324,7 @@ export const directive: Parser<Directive> = first<Directive>(
   open,
   close,
   balance,
-  commodity,
+  commodityDirective,
   pad,
   note,
   document,

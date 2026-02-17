@@ -20,7 +20,7 @@ import {
   afterWhitespace,
   blankLine,
   boolean,
-  currency,
+  commodity,
   date as dateLex,
   key,
   lineComment,
@@ -74,8 +74,8 @@ export const blankLineOrComment = first<CommentOrBlank>(
 export const blankLinesAndComments = repeated(blankLineOrComment);
 
 export const amount: Parser<Amount> = map(
-  sequence(number, whitespace, currency),
-  ([num, , curr]) => ({ number: num, currency: curr }),
+  sequence(number, whitespace, commodity),
+  ([num, , curr]) => ({ number: num, commodity: curr }),
 );
 
 export const account: Parser<string> = accountLex;

@@ -209,8 +209,8 @@ function formatBalance(balance: Balance): string {
 function formatOpen(open: Open): string {
   let result = `${open.date} open ${open.account}`;
 
-  if (open.currencies && open.currencies.length > 0) {
-    result += ` ${open.currencies.join(",")}`;
+  if (open.commodities && open.commodities.length > 0) {
+    result += ` ${open.commodities.join(",")}`;
   }
 
   if (open.booking) {
@@ -225,7 +225,7 @@ function formatClose(close: Close): string {
 }
 
 function formatCommodity(commodity: Commodity): string {
-  return `${commodity.date} commodity ${commodity.currency}`;
+  return `${commodity.date} commodity ${commodity.commodity}`;
 }
 
 function formatInclude(include: Include): string {
@@ -256,7 +256,7 @@ function formatDocument(document: Document): string {
 }
 
 function formatPrice(price: Price): string {
-  return `${price.date} price ${price.currency} ${formatAmount(price.amount)}`;
+  return `${price.date} price ${price.commodity} ${formatAmount(price.amount)}`;
 }
 
 function formatEvent(event: Event): string {
@@ -275,7 +275,7 @@ function formatCustom(custom: Custom): string {
 }
 
 function formatAmount(amount: Amount): string {
-  return `${amount.number} ${amount.currency}`;
+  return `${amount.number} ${amount.commodity}`;
 }
 
 function formatComment(comment: string): string {

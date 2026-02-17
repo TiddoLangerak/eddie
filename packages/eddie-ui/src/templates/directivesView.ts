@@ -8,7 +8,7 @@ import { unreachable } from "@tiddo/eddie-utils/unreachable";
 import { HtmlString, html, joining } from "../html.ts";
 
 function formatAmount(a: Amount): string {
-  return `${a.number} ${a.currency}`;
+  return `${a.number} ${a.commodity}`;
 }
 
 function directiveSummary(d: Directive): HtmlString {
@@ -26,11 +26,11 @@ function directiveSummary(d: Directive): HtmlString {
     case "balance":
       return html`<span class="directive-summary">${d.account}: ${formatAmount(d.amount)}</span>`;
     case "open":
-      return html`<span class="directive-summary">${d.account}${d.currencies.length > 0 ? ` (${d.currencies.join(", ")})` : ""}</span>`;
+      return html`<span class="directive-summary">${d.account}${d.commodities.length > 0 ? ` (${d.commodities.join(", ")})` : ""}</span>`;
     case "close":
       return html`<span class="directive-summary">${d.account}</span>`;
     case "commodity":
-      return html`<span class="directive-summary">${d.currency}</span>`;
+      return html`<span class="directive-summary">${d.commodity}</span>`;
     case "pad":
       return html`<span class="directive-summary">${d.account} ← ${d.sourceAccount}</span>`;
     case "note":
@@ -38,7 +38,7 @@ function directiveSummary(d: Directive): HtmlString {
     case "document":
       return html`<span class="directive-summary">${d.account}: ${d.filename}</span>`;
     case "price":
-      return html`<span class="directive-summary">${d.currency} = ${formatAmount(d.amount)}</span>`;
+      return html`<span class="directive-summary">${d.commodity} = ${formatAmount(d.amount)}</span>`;
     case "event":
       return html`<span class="directive-summary">${d.eventType}: ${d.description}</span>`;
     case "query":

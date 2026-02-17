@@ -66,11 +66,11 @@ describe("formatBeancountFile", () => {
       postings: [
         {
           account: "Assets:Checking",
-          amount: { number: "100.00", currency: "USD" },
+          amount: { number: "100.00", commodity: "USD" },
         },
         {
           account: "Income:Salary",
-          amount: { number: "-100.00", currency: "USD" },
+          amount: { number: "-100.00", commodity: "USD" },
         },
       ],
     };
@@ -101,7 +101,7 @@ describe("formatBeancountFile", () => {
       postings: [
         {
           account: "Expenses:Food:Coffee",
-          amount: { number: "4.50", currency: "USD" },
+          amount: { number: "4.50", commodity: "USD" },
         },
         {
           account: "Assets:Cash",
@@ -136,7 +136,7 @@ describe("formatBeancountFile", () => {
       postings: [
         {
           account: "Expenses:Rent",
-          amount: { number: "1500.00", currency: "USD" },
+          amount: { number: "1500.00", commodity: "USD" },
         },
         {
           account: "Assets:Checking",
@@ -169,13 +169,13 @@ describe("formatBeancountFile", () => {
       postings: [
         {
           account: "Assets:Investments:Stock",
-          amount: { number: "10", currency: "AAPL" },
-          cost: { number: "150.00", currency: "USD" },
-          price: { number: "151.00", currency: "USD" },
+          amount: { number: "10", commodity: "AAPL" },
+          cost: { number: "150.00", commodity: "USD" },
+          price: { number: "151.00", commodity: "USD" },
         },
         {
           account: "Assets:Checking",
-          amount: { number: "-1500.00", currency: "USD" },
+          amount: { number: "-1500.00", commodity: "USD" },
         },
       ],
     };
@@ -209,7 +209,7 @@ describe("formatBeancountFile", () => {
       postings: [
         {
           account: "Expenses:Services",
-          amount: { number: "500.00", currency: "USD" },
+          amount: { number: "500.00", commodity: "USD" },
           metadata: {
             category: "consulting",
           },
@@ -318,7 +318,7 @@ describe("formatBeancountFile", () => {
       type: "balance",
       date: "2024-01-01",
       account: "Assets:Checking",
-      amount: { number: "1000.00", currency: "USD" },
+      amount: { number: "1000.00", commodity: "USD" },
     };
 
     const file: BeancountFile = {
@@ -337,7 +337,7 @@ describe("formatBeancountFile", () => {
       type: "open",
       date: "2024-01-01",
       account: "Assets:Checking",
-      currencies: ["USD", "EUR"],
+      commodities: ["USD", "EUR"],
     };
 
     const file: BeancountFile = {
@@ -351,7 +351,7 @@ describe("formatBeancountFile", () => {
     assert.equal(result, "2024-01-01 open Assets:Checking USD,EUR");
   });
 
-  it("formats open directive without currencies", () => {
+  it("formats open directive without commodities", () => {
     const open: Open = {
       type: "open",
       date: "2024-01-01",
@@ -391,7 +391,7 @@ describe("formatBeancountFile", () => {
     const commodity: Commodity = {
       type: "commodity",
       date: "2024-01-01",
-      currency: "AAPL",
+      commodity: "AAPL",
     };
 
     const file: BeancountFile = {
@@ -472,8 +472,8 @@ describe("formatBeancountFile", () => {
     const price: Price = {
       type: "price",
       date: "2024-01-01",
-      currency: "AAPL",
-      amount: { number: "150.00", currency: "USD" },
+      commodity: "AAPL",
+      amount: { number: "150.00", commodity: "USD" },
     };
 
     const file: BeancountFile = {
@@ -560,7 +560,7 @@ describe("formatBeancountFile", () => {
         {
           type: "commodity",
           date: "2024-01-01",
-          currency: "USD",
+          commodity: "USD",
         },
       ],
       footer: [{ kind: "comment", comment: "End of file" }],
@@ -633,7 +633,7 @@ describe("formatBeancountFile", () => {
           postings: [
             {
               account: "Assets:Checking",
-              amount: { number: "1000.00", currency: "USD" },
+              amount: { number: "1000.00", commodity: "USD" },
             },
             {
               account: "Income:Salary",
@@ -644,7 +644,7 @@ describe("formatBeancountFile", () => {
           type: "balance",
           date: "2024-01-31",
           account: "Assets:Checking",
-          amount: { number: "1000.00", currency: "USD" },
+          amount: { number: "1000.00", commodity: "USD" },
         },
       ],
       header: [],
@@ -672,7 +672,7 @@ describe("formatBeancountFile", () => {
       postings: [
         {
           account: "Expenses:Food:Groceries",
-          amount: { number: "50.00", currency: "USD" },
+          amount: { number: "50.00", commodity: "USD" },
         },
         {
           account: "Assets:Bank:Checking",

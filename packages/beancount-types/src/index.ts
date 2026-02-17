@@ -81,7 +81,7 @@ export interface Posting {
 
 export interface Amount {
   number: string;
-  currency: string;
+  commodity: string;
 }
 
 export interface Balance {
@@ -96,7 +96,7 @@ export interface Open {
   type: "open";
   date: string;
   account: string;
-  currencies: string[];
+  commodities: string[];
   booking?: string;
   formatting: FormattingInfo;
 }
@@ -111,7 +111,7 @@ export interface Close {
 export interface Commodity {
   type: "commodity";
   date: string;
-  currency: string;
+  commodity: string;
   formatting: FormattingInfo;
 }
 
@@ -142,7 +142,7 @@ export interface Document {
 export interface Price {
   type: "price";
   date: string;
-  currency: string;
+  commodity: string;
   amount: Amount;
   formatting: FormattingInfo;
 }
