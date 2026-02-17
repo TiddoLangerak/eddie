@@ -5,6 +5,7 @@ type TreeEntry =
   | {
       type: "folder";
       name: string;
+      path: string;
       children: TreeEntry[];
       hasBeancountDescendant?: boolean;
     };
@@ -14,6 +15,7 @@ function addPath(
   parts: string[],
   fullPath: string,
   isBeancount: boolean,
+  folderPrefix = "",
 ): void {
   if (parts.length === 1) {
     const existing = level.find(
@@ -28,15 +30,16 @@ function addPath(
     return;
   }
   const [head, ...rest] = parts;
+  const folderPath = folderPrefix ? `${folderPrefix}/${head}` : head;
   let folder = level.find(
     (e): e is TreeEntry & { type: "folder" } =>
       e.type === "folder" && e.name === head,
   );
   if (!folder) {
-    folder = { type: "folder", name: head, children: [] };
+    folder = { type: "folder", name: head, path: folderPath, children: [] };
     level.push(folder);
   }
-  addPath(folder.children, rest, fullPath, isBeancount);
+  addPath(folder.children, rest, fullPath, isBeancount, folderPath);
 }
 
 function sortEntries(entries: TreeEntry[]): void {
@@ -110,7 +113,7 @@ function renderTreeEntry(
   const collapsedClass = " collapsed";
 
   return html`
-		<li class="file-tree-folder${hasBeancountClass}${collapsedClass}" data-depth="${String(depth)}" data-folder="${entry.name}">
+		<li class="file-tree-folder${hasBeancountClass}${collapsedClass}" data-depth="${String(depth)}" data-folder="${entry.name}" data-folder-path="${entry.path}">
 			<div class="file-tree-row file-tree-folder-header">
 				<span class="file-tree-icon">
 					<button type="button" class="file-tree-folder-toggle" aria-expanded="false" aria-label="Toggle ${entry.name}">
@@ -137,7 +140,7 @@ export function fileBrowser(
     .reduce(joining(""), HtmlString.EMPTY);
 
   return html`
-		<aside class="file-browser">
+		<aside class="file-browser" data-workspace="${workspace}">
 			<h2>Workspace Files</h2>
 			<div class="workspace-path">${workspace}</div>
 			<label class="file-browser-toggle">
