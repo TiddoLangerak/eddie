@@ -319,6 +319,7 @@ describe("formatBeancountFile", () => {
       date: "2024-01-01",
       account: "Assets:Checking",
       amount: { number: "1000.00", commodity: "USD" },
+      formatting: { header: [], footer: [], inlineComment: undefined },
     };
 
     const file: BeancountFile = {
@@ -330,6 +331,31 @@ describe("formatBeancountFile", () => {
 
     const result = formatBeancountFile(file);
     assert.equal(result, "2024-01-01 balance Assets:Checking 1000.00 USD");
+  });
+
+  it("formats balance directive with tags and links", () => {
+    const balance: Balance = {
+      type: "balance",
+      date: "2024-01-31",
+      account: "Assets:Bank",
+      amount: { number: "1000", commodity: "USD" },
+      tags: ["audit"],
+      links: ["ref-123"],
+      formatting: { header: [], footer: [], inlineComment: undefined },
+    };
+
+    const file: BeancountFile = {
+      directives: [balance],
+      header: [],
+      footer: [],
+      metadata: {},
+    };
+
+    const result = formatBeancountFile(file);
+    assert.equal(
+      result,
+      "2024-01-31 balance Assets:Bank 1000 USD #audit ^ref-123",
+    );
   });
 
   it("formats open directive", () => {
@@ -869,6 +895,12 @@ test("round-trip", (t) => {
 
   t.test("option directive", () => {
     assertParseFormatIdentity('option "operating_currency" "USD"\n');
+  });
+
+  t.test("balance directive with tags and links", () => {
+    assertParseFormatIdentity(
+      "2024-01-31 balance Assets:Bank 1000 USD #audit ^ref-123\n",
+    );
   });
 
   t.test("include and plugin with other directives", () => {

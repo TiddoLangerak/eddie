@@ -68,11 +68,20 @@ function directiveHeader<
   params: Parser<TData>,
 ): Parser<{ type: TType; date: string; formatting: FormattingInfo } & TData> {
   return map(
-    commentedLine(date, whitespace, string(type), params),
-    ({ parts: [date, , , params], comment }) => ({
+    commentedLine(
+      date,
+      whitespace,
+      string(type),
+      params,
+      optional(afterOptionalWhitespace(tags)),
+      optional(afterOptionalWhitespace(links)),
+    ),
+    ({ parts: [date, , , params, tagsOpt, linksOpt], comment }) => ({
       type,
       date,
       ...params,
+      ...(tagsOpt && tagsOpt.length > 0 && { tags: tagsOpt }),
+      ...(linksOpt && linksOpt.length > 0 && { links: linksOpt }),
       formatting: { header: [], footer: [], inlineComment: comment },
     }),
   );
@@ -280,10 +289,17 @@ const custom: Parser<Custom> = directiveHeader(
 );
 
 const include: Parser<Include> = map(
-  commentedLine(string("include"), afterWhitespace(quotedString)),
-  ({ parts: [, filename], comment }) => ({
+  commentedLine(
+    string("include"),
+    afterWhitespace(quotedString),
+    optional(afterOptionalWhitespace(tags)),
+    optional(afterOptionalWhitespace(links)),
+  ),
+  ({ parts: [, filename, tagsOpt, linksOpt], comment }) => ({
     type: "include",
     filename,
+    ...(tagsOpt && tagsOpt.length > 0 && { tags: tagsOpt }),
+    ...(linksOpt && linksOpt.length > 0 && { links: linksOpt }),
     formatting: { header: [], footer: [], inlineComment: comment },
   }),
 );
@@ -293,11 +309,15 @@ const plugin: Parser<Plugin> = map(
     string("plugin"),
     afterWhitespace(quotedString),
     optional(afterWhitespace(quotedString)),
+    optional(afterOptionalWhitespace(tags)),
+    optional(afterOptionalWhitespace(links)),
   ),
-  ({ parts: [, module, config], comment }) => ({
+  ({ parts: [, module, config, tagsOpt, linksOpt], comment }) => ({
     type: "plugin",
     module,
     config,
+    ...(tagsOpt && tagsOpt.length > 0 && { tags: tagsOpt }),
+    ...(linksOpt && linksOpt.length > 0 && { links: linksOpt }),
     formatting: { header: [], footer: [], inlineComment: comment },
   }),
 );
@@ -307,11 +327,15 @@ const option: Parser<Option> = map(
     string("option"),
     afterWhitespace(quotedString),
     afterWhitespace(quotedString),
+    optional(afterOptionalWhitespace(tags)),
+    optional(afterOptionalWhitespace(links)),
   ),
-  ({ parts: [, name, value], comment }) => ({
+  ({ parts: [, name, value, tagsOpt, linksOpt], comment }) => ({
     type: "option",
     name,
     value,
+    ...(tagsOpt && tagsOpt.length > 0 && { tags: tagsOpt }),
+    ...(linksOpt && linksOpt.length > 0 && { links: linksOpt }),
     formatting: { header: [], footer: [], inlineComment: comment },
   }),
 );
