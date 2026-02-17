@@ -298,7 +298,6 @@ button:hover {
   overflow: auto;
   font-family: var(--font-mono);
   font-size: var(--font-size-code-sm);
-  line-height: 1.5;
   min-height: var(--editor-min-height);
 }
 
@@ -308,6 +307,7 @@ button:hover {
 
 .source-line {
   white-space: pre;
+  display: inline;
 }
 
 .source-line .line-no {
