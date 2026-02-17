@@ -142,7 +142,7 @@ export function fileBrowser(
 			<div class="workspace-path">${workspace}</div>
 			<label class="file-browser-toggle">
 				<input type="checkbox" id="file-browser-show-other" class="file-browser-show-other" aria-label="Show non-beancount files">
-				Show other files
+				Show all files
 			</label>
 			<ul class="file-tree">
 				${treeHtml}
