@@ -5,13 +5,22 @@ import { fileBrowser } from "./fileBrowser.ts";
 
 import type { WorkspaceFile } from "../beancountController.ts";
 
-export function layout(
-  workspace: string,
-  files: WorkspaceFile[],
-  currentFile: string | null,
-  message: HtmlString = HtmlString.EMPTY,
-  state: EditorState = null,
-): HtmlString {
+export interface LayoutOptions {
+  workspace: string;
+  files: WorkspaceFile[];
+  currentFile?: string | null;
+  message?: HtmlString;
+  state?: EditorState | null;
+}
+
+export function layout(options: LayoutOptions): HtmlString {
+  const {
+    workspace,
+    files,
+    currentFile = null,
+    message = HtmlString.EMPTY,
+    state = null,
+  } = options;
   return html`<!DOCTYPE html>
 		<html lang="en">
 			<head>

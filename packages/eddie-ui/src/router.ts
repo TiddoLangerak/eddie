@@ -28,8 +28,8 @@ export function createRouter(ctx: RouteContext): Router {
     const url = new URL(req.url ?? "", `http://${req.headers.host}`);
     const file = url.searchParams.get("file");
     const saved = url.searchParams.has("saved");
-    const html = await handleView(ctx, file, saved);
-    sendHtml(res, html);
+    const { status, content } = await handleView(ctx, file, saved);
+    sendHtml(res, content, status);
   });
 
   builder.on("POST", "/save", async (req, res) => {

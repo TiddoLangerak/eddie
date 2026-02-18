@@ -4,6 +4,7 @@ import { join, relative, resolve } from "node:path";
 import { formatBeancountFile } from "@tiddo/beancount-formatter";
 import { ParseError, parseBeancount } from "@tiddo/beancount-parser";
 import type { BeancountFile } from "@tiddo/beancount-types";
+import { fileExists } from "@tiddo/eddie-utils/files";
 import { HtmlString, html } from "./html.ts";
 import type { EditorState } from "./templates/editor.ts";
 import { layout } from "./templates/layout.ts";
@@ -28,6 +29,8 @@ function isValidPath(workspace: string, filePath: string): boolean {
 export interface RouteContext {
   workspace: string;
 }
+
+export type ViewResponse = { status: number; content: HtmlString };
 
 function isBeancountFile(name: string): boolean {
   return name.endsWith(".bean") || name.endsWith(".beancount");
@@ -68,12 +71,20 @@ export async function handleView(
   ctx: RouteContext,
   file: string | null,
   saved = false,
-): Promise<HtmlString> {
+): Promise<ViewResponse> {
   const files = await getWorkspaceFiles(ctx.workspace);
 
   let content = "";
   if (file && isValidPath(ctx.workspace, file)) {
-    content = await readFile(join(ctx.workspace, file), "utf-8");
+    const fullPath = join(ctx.workspace, file);
+    if (!(await fileExists(fullPath))) {
+      const message = html`<div class="message error">File not found: ${file}</div>`;
+      return {
+        status: 404,
+        content: layout({ workspace: ctx.workspace, files, message }),
+      };
+    }
+    content = await readFile(fullPath, "utf-8");
   }
 
   const state = tryParse(content);
@@ -81,7 +92,16 @@ export async function handleView(
     ? html`<div class="message success">Saved successfully</div>`
     : HtmlString.EMPTY;
 
-  return layout(ctx.workspace, files, file, message, state);
+  return {
+    status: 200,
+    content: layout({
+      workspace: ctx.workspace,
+      files,
+      currentFile: file,
+      message,
+      state,
+    }),
+  };
 }
 
 export async function handleSave(
@@ -100,13 +120,13 @@ export async function handleSave(
     const message = html`<div class="message error">Missing file or content</div>`;
     const state = tryParse(typeof content === "string" ? content : "");
     return {
-      html: layout(
-        ctx.workspace,
+      html: layout({
+        workspace: ctx.workspace,
         files,
-        typeof file === "string" ? file : null,
+        currentFile: typeof file === "string" ? file : null,
         message,
         state,
-      ),
+      }),
     };
   }
 
@@ -114,7 +134,13 @@ export async function handleSave(
     const message = html`<div class="message error">Invalid file path</div>`;
     const state = tryParse(content);
     return {
-      html: layout(ctx.workspace, files, file, message, state),
+      html: layout({
+        workspace: ctx.workspace,
+        files,
+        currentFile: file,
+        message,
+        state,
+      }),
     };
   }
 
@@ -137,13 +163,13 @@ export async function handleParse(
   ) {
     const message = html`<div class="message error">Missing file or content</div>`;
     const state = tryParse(typeof content === "string" ? content : "");
-    return layout(
-      ctx.workspace,
+    return layout({
+      workspace: ctx.workspace,
       files,
-      typeof file === "string" ? file : null,
+      currentFile: typeof file === "string" ? file : null,
       message,
       state,
-    );
+    });
   }
 
   const state = tryParse(content);
@@ -156,7 +182,13 @@ export async function handleParse(
 			</div>
 		`
       : HtmlString.EMPTY;
-  return layout(ctx.workspace, files, file, message, state);
+  return layout({
+    workspace: ctx.workspace,
+    files,
+    currentFile: file,
+    message,
+    state,
+  });
 }
 
 export async function handleFormat(
@@ -173,7 +205,13 @@ export async function handleFormat(
       <div class="message success">Formatted successfully</div>
     `;
     const state = tryParse(formatted);
-    return layout(ctx.workspace, files, file, message, state);
+    return layout({
+      workspace: ctx.workspace,
+      files,
+      currentFile: file,
+      message,
+      state,
+    });
   } catch (error: unknown) {
     const errorMessage =
       error instanceof ParseError
@@ -185,6 +223,12 @@ export async function handleFormat(
       <div class="message error">Format error: ${errorMessage}</div>
     `;
     const state = tryParse(content);
-    return layout(ctx.workspace, files, file, message, state);
+    return layout({
+      workspace: ctx.workspace,
+      files,
+      currentFile: file,
+      message,
+      state,
+    });
   }
 }
