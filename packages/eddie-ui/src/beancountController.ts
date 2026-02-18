@@ -106,24 +106,19 @@ export async function handleView(
 
 export async function handleSave(
   ctx: RouteContext,
-  file: string | string[] | undefined,
-  content: string | string[] | undefined,
+  file: string,
+  content: string,
 ): Promise<{ redirect: string } | { html: HtmlString }> {
   const files = await getWorkspaceFiles(ctx.workspace);
 
-  if (
-    typeof file !== "string" ||
-    typeof content !== "string" ||
-    !file ||
-    !content
-  ) {
+  if (!file || !content) {
     const message = html`<div class="message error">Missing file or content</div>`;
-    const state = tryParse(typeof content === "string" ? content : "");
+    const state = tryParse(content);
     return {
       html: layout({
         workspace: ctx.workspace,
         files,
-        currentFile: typeof file === "string" ? file : null,
+        currentFile: file || null,
         message,
         state,
       }),
@@ -150,23 +145,18 @@ export async function handleSave(
 
 export async function handleParse(
   ctx: RouteContext,
-  file: string | string[] | undefined,
-  content: string | string[] | undefined,
+  file: string,
+  content: string,
 ): Promise<HtmlString> {
   const files = await getWorkspaceFiles(ctx.workspace);
 
-  if (
-    typeof file !== "string" ||
-    typeof content !== "string" ||
-    !file ||
-    !content
-  ) {
+  if (!file || !content) {
     const message = html`<div class="message error">Missing file or content</div>`;
-    const state = tryParse(typeof content === "string" ? content : "");
+    const state = tryParse(content);
     return layout({
       workspace: ctx.workspace,
       files,
-      currentFile: typeof file === "string" ? file : null,
+      currentFile: file || null,
       message,
       state,
     });
