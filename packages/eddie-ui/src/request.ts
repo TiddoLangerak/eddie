@@ -1,16 +1,17 @@
 import type { IncomingMessage } from "node:http";
+import { FormDataParseError } from "./errors.ts";
 
-export class FormDataParseError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "FormDataParseError";
-  }
+export type FormDataRecord = Record<string, string | string[]>;
+
+export type FormDataValue = string | string[] | undefined;
+
+function getRaw(record: FormDataRecord, key: string): FormDataValue {
+  return record[key];
 }
 
-export type FormDataValue = string | string[] | undefined | null;
-
-export function formStringArray(raw: FormDataValue): string[] {
-  if (raw === undefined || raw === null) {
+export function formStringArray(record: FormDataRecord, key: string): string[] {
+  const raw = getRaw(record, key);
+  if (raw === undefined) {
     return [];
   }
   if (Array.isArray(raw)) {
@@ -19,22 +20,28 @@ export function formStringArray(raw: FormDataValue): string[] {
   return [raw];
 }
 
-export function formString(raw: FormDataValue): string {
-  if (raw === undefined || raw === null) {
-    throw new FormDataParseError("Missing required field");
+export function formString(record: FormDataRecord, key: string): string {
+  const raw = getRaw(record, key);
+  if (raw === undefined) {
+    throw new FormDataParseError(key, "Missing required field");
   }
   if (Array.isArray(raw)) {
-    throw new FormDataParseError("Expected single value, got multiple");
+    throw new FormDataParseError(key, "Expected single value, got multiple");
   }
   return raw;
 }
 
-export function formStringOrNull(raw: FormDataValue): string | null {
-  if (raw === undefined || raw === null) {
+export function formStringOrNull(
+  record: FormDataRecord,
+  key: string,
+): string | null {
+  const raw = getRaw(record, key);
+  if (raw === undefined) {
     return null;
   }
   if (Array.isArray(raw)) {
     throw new FormDataParseError(
+      key,
       "Expected single value or missing, got multiple",
     );
   }
@@ -46,9 +53,9 @@ export async function readBody(req: IncomingMessage): Promise<string> {
   return Buffer.concat(chunks).toString("utf-8");
 }
 
-export function parseFormData(body: string): Record<string, string | string[]> {
+export function parseFormData(body: string): FormDataRecord {
   const parsed = new URLSearchParams(body);
-  const result: Record<string, string | string[]> = {};
+  const result: FormDataRecord = {};
   for (const [key, value] of parsed.entries()) {
     const existing = result[key];
     if (existing === undefined) {

@@ -1,5 +1,6 @@
 import { type ServerResponse, createServer } from "node:http";
 import type { RouteContext } from "./beancountController.ts";
+import { HttpResponseError } from "./errors.ts";
 import { createRouter } from "./router.ts";
 
 function sendError(res: ServerResponse, message: string, status = 400) {
@@ -24,6 +25,10 @@ export function createEditorServer(workspace: string) {
         sendError(res, "Not found", 404);
       }
     } catch (error) {
+      if (error instanceof HttpResponseError) {
+        sendError(res, error.message, error.statusCode);
+        return;
+      }
       console.error("Server error:", error);
       sendError(res, "Internal server error", 500);
     }

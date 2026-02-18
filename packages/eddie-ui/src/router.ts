@@ -8,12 +8,7 @@ import {
   handleSave,
   handleView,
 } from "./beancountController.ts";
-import {
-  FormDataParseError,
-  formString,
-  parseFormData,
-  readBody,
-} from "./request.ts";
+import { formString, parseFormData, readBody } from "./request.ts";
 import { sendError, sendHtml, sendRedirect } from "./response.ts";
 import { RouteBuilder, type Router } from "./routing.ts";
 
@@ -40,56 +35,32 @@ export function createRouter(ctx: RouteContext): Router {
   builder.on("POST", "/save", async (req, res) => {
     const body = await readBody(req);
     const formData = parseFormData(body);
-    try {
-      const file = formString(formData.file);
-      const content = formString(formData.content);
-      const result = await handleSave(ctx, file, content);
-      if ("redirect" in result) {
-        sendRedirect(res, result.redirect);
-      } else {
-        sendHtml(res, result.html);
-      }
-    } catch (err) {
-      if (err instanceof FormDataParseError) {
-        sendError(res, err.message, 400);
-        return;
-      }
-      throw err;
+    const file = formString(formData, "file");
+    const content = formString(formData, "content");
+    const result = await handleSave(ctx, file, content);
+    if ("redirect" in result) {
+      sendRedirect(res, result.redirect);
+    } else {
+      sendHtml(res, result.html);
     }
   });
 
   builder.on("POST", "/parse", async (req, res) => {
     const body = await readBody(req);
     const formData = parseFormData(body);
-    try {
-      const file = formString(formData.file);
-      const content = formString(formData.content);
-      const html = await handleParse(ctx, file, content);
-      sendHtml(res, html);
-    } catch (err) {
-      if (err instanceof FormDataParseError) {
-        sendError(res, err.message, 400);
-        return;
-      }
-      throw err;
-    }
+    const file = formString(formData, "file");
+    const content = formString(formData, "content");
+    const html = await handleParse(ctx, file, content);
+    sendHtml(res, html);
   });
 
   builder.on("POST", "/format", async (req, res) => {
     const body = await readBody(req);
     const formData = parseFormData(body);
-    try {
-      const file = formString(formData.file);
-      const content = formString(formData.content);
-      const html = await handleFormat(ctx, file, content);
-      sendHtml(res, html);
-    } catch (err) {
-      if (err instanceof FormDataParseError) {
-        sendError(res, err.message, 400);
-        return;
-      }
-      throw err;
-    }
+    const file = formString(formData, "file");
+    const content = formString(formData, "content");
+    const html = await handleFormat(ctx, file, content);
+    sendHtml(res, html);
   });
 
   builder.onPrefix("GET", "/static/", async (req, res) => {
