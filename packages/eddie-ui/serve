@@ -5,4 +5,4 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Run the serve.ts file with node
-node --experimental-strip-types --conditions=development "$SCRIPT_DIR/serve.ts" "$@"
+node --watch --experimental-strip-types --conditions=development "$SCRIPT_DIR/serve.ts" "$@"
