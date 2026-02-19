@@ -2,14 +2,16 @@ import {
   type BeancountFile,
   type Directive,
   type Posting,
-  isErr,
-  parseBeancountFile,
+  beancountFile,
 } from "@tiddo/beancount-types";
+import { isErr, object, string } from "@tiddo/eddie-parry";
 
 export interface BeancountData {
   file: string;
   model: BeancountFile;
 }
+
+const beancountData = object({ file: string(), model: beancountFile });
 
 function getData(): BeancountData | null {
   const el = document.getElementById("beancount-data");
@@ -20,16 +22,9 @@ function getData(): BeancountData | null {
   } catch {
     return null;
   }
-  if (!isRecord(json)) return null;
-  if (typeof json.file !== "string") return null;
-  if (typeof json.model !== "object" || json.model === null) return null;
-  const parsed = parseBeancountFile(json.model);
+  const parsed = beancountData(json);
   if (isErr(parsed)) return null;
-  return { file: json.file, model: parsed.value };
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
+  return parsed.value;
 }
 
 function getCurrentFile(): string {

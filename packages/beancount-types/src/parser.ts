@@ -4,94 +4,86 @@ import {
   object,
   oneOf,
   optional,
+  record,
   string,
+  unknown,
 } from "@tiddo/eddie-parry";
-import type { ParryParser, ParryResult } from "@tiddo/eddie-parry";
-import { err, isErr, ok } from "@tiddo/eddie-parry";
 import type {
+  Amount,
+  Balance,
   BeancountFile,
+  Close,
   CommentOrBlank,
+  Commodity,
+  Custom,
   Directive,
+  Document,
+  Event,
   FormattingInfo,
+  Include,
+  Note,
+  Open,
+  Option,
+  Pad,
+  Plugin,
+  Posting,
+  Price,
+  Query,
+  Transaction,
 } from "./index.ts";
-
-/**
- * Parses an unknown value into a BeancountFile. Use this to validate
- * JSON or other untrusted data before using it as a BeancountFile.
- */
-export function parseBeancountFile(value: unknown): ParryResult<BeancountFile> {
-  return beancountFileParser(value);
-}
-
-export { isErr, isOk } from "@tiddo/eddie-parry";
-
-function recordParser(): ParryParser<Record<string, unknown>> {
-  return (value) => {
-    if (typeof value !== "object" || value === null || Array.isArray(value)) {
-      return err((ref) => `${ref} is not an object`);
-    }
-    return ok(Object.fromEntries(Object.entries(value)));
-  };
-}
-
-function unknownParser(): ParryParser<unknown> {
-  return (v) => ok(v);
-}
 
 const commentOrBlank = oneOf<CommentOrBlank>(
   object({ kind: literal("blank") }),
   object({ kind: literal("comment"), comment: string() }),
 );
 
-const formattingInfo: ParryParser<FormattingInfo> = object({
+const formattingInfo = object<FormattingInfo>({
   header: array(commentOrBlank),
   footer: array(commentOrBlank),
   inlineComment: optional(string()),
 });
 
-const amount = object({
+const amount = object<Amount>({
   number: string(),
   commodity: string(),
 });
 
-const optionalStringArray = optional(array(string()));
-
-const posting = object({
+const posting = object<Posting>({
   account: string(),
   amount: optional(amount),
   cost: optional(amount),
   price: optional(amount),
-  metadata: recordParser(),
+  metadata: record(),
   formatting: formattingInfo,
 });
 
-const include = object({
+const include = object<Include>({
   type: literal("include"),
   filename: string(),
-  tags: optionalStringArray,
-  links: optionalStringArray,
+  tags: optional(array(string())),
+  links: optional(array(string())),
   formatting: formattingInfo,
 });
 
-const plugin = object({
+const plugin = object<Plugin>({
   type: literal("plugin"),
   module: string(),
   config: optional(string()),
-  tags: optionalStringArray,
-  links: optionalStringArray,
+  tags: optional(array(string())),
+  links: optional(array(string())),
   formatting: formattingInfo,
 });
 
-const option = object({
+const option = object<Option>({
   type: literal("option"),
   name: string(),
   value: string(),
-  tags: optionalStringArray,
-  links: optionalStringArray,
+  tags: optional(array(string())),
+  links: optional(array(string())),
   formatting: formattingInfo,
 });
 
-const transaction = object({
+const transaction = object<Transaction>({
   type: literal("transaction"),
   date: string(),
   flag: string(),
@@ -100,117 +92,117 @@ const transaction = object({
   tags: array(string()),
   links: array(string()),
   postings: array(posting),
-  metadata: recordParser(),
+  metadata: record(),
   metadataHeader: array(commentOrBlank),
   formatting: formattingInfo,
 });
 
-const balance = object({
+const balance = object<Balance>({
   type: literal("balance"),
   date: string(),
   account: string(),
   amount,
-  tags: optionalStringArray,
-  links: optionalStringArray,
+  tags: optional(array(string())),
+  links: optional(array(string())),
   formatting: formattingInfo,
 });
 
-const open = object({
+const open = object<Open>({
   type: literal("open"),
   date: string(),
   account: string(),
   commodities: array(string()),
   booking: optional(string()),
-  tags: optionalStringArray,
-  links: optionalStringArray,
+  tags: optional(array(string())),
+  links: optional(array(string())),
   formatting: formattingInfo,
 });
 
-const close = object({
+const close = object<Close>({
   type: literal("close"),
   date: string(),
   account: string(),
-  tags: optionalStringArray,
-  links: optionalStringArray,
+  tags: optional(array(string())),
+  links: optional(array(string())),
   formatting: formattingInfo,
 });
 
-const commodity = object({
+const commodity = object<Commodity>({
   type: literal("commodity"),
   date: string(),
   commodity: string(),
-  tags: optionalStringArray,
-  links: optionalStringArray,
+  tags: optional(array(string())),
+  links: optional(array(string())),
   formatting: formattingInfo,
 });
 
-const pad = object({
+const pad = object<Pad>({
   type: literal("pad"),
   date: string(),
   account: string(),
   sourceAccount: string(),
-  tags: optionalStringArray,
-  links: optionalStringArray,
+  tags: optional(array(string())),
+  links: optional(array(string())),
   formatting: formattingInfo,
 });
 
-const note = object({
+const note = object<Note>({
   type: literal("note"),
   date: string(),
   account: string(),
   comment: string(),
-  tags: optionalStringArray,
-  links: optionalStringArray,
+  tags: optional(array(string())),
+  links: optional(array(string())),
   formatting: formattingInfo,
 });
 
-const document = object({
+const document = object<Document>({
   type: literal("document"),
   date: string(),
   account: string(),
   filename: string(),
-  tags: optionalStringArray,
-  links: optionalStringArray,
+  tags: optional(array(string())),
+  links: optional(array(string())),
   formatting: formattingInfo,
 });
 
-const price = object({
+const price = object<Price>({
   type: literal("price"),
   date: string(),
   commodity: string(),
   amount,
-  tags: optionalStringArray,
-  links: optionalStringArray,
+  tags: optional(array(string())),
+  links: optional(array(string())),
   formatting: formattingInfo,
 });
 
-const event = object({
+const event = object<Event>({
   type: literal("event"),
   date: string(),
   eventType: string(),
   description: string(),
-  tags: optionalStringArray,
-  links: optionalStringArray,
+  tags: optional(array(string())),
+  links: optional(array(string())),
   formatting: formattingInfo,
 });
 
-const query = object({
+const query = object<Query>({
   type: literal("query"),
   date: string(),
   name: string(),
   queryString: string(),
-  tags: optionalStringArray,
-  links: optionalStringArray,
+  tags: optional(array(string())),
+  links: optional(array(string())),
   formatting: formattingInfo,
 });
 
-const custom = object({
+const custom = object<Custom>({
   type: literal("custom"),
   date: string(),
   customType: string(),
-  values: array(unknownParser()),
-  tags: optionalStringArray,
-  links: optionalStringArray,
+  values: array(unknown()),
+  tags: optional(array(string())),
+  links: optional(array(string())),
   formatting: formattingInfo,
 });
 
@@ -232,9 +224,9 @@ const directive = oneOf<Directive>(
   custom,
 );
 
-const beancountFileParser: ParryParser<BeancountFile> = object({
+export const beancountFile = object<BeancountFile>({
   directives: array(directive),
   header: array(commentOrBlank),
   footer: array(commentOrBlank),
-  metadata: recordParser(),
+  metadata: record(),
 });

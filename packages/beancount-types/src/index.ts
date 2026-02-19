@@ -199,8 +199,4 @@ export interface Custom {
   formatting: FormattingInfo;
 }
 
-export {
-  isErr,
-  isOk,
-  parseBeancountFile,
-} from "./parser.ts";
+export { beancountFile } from "./parser.ts";

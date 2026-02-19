@@ -45,7 +45,7 @@ export function date(): ParryParser<Date> {
 
 export type ObjectShape<T> = { [K in keyof T]: ParryParser<T[K]> };
 
-export function object<T extends Record<string, unknown>>(
+export function object<T extends object>(
   shape: ObjectShape<T>,
 ): ParryParser<T> {
   return (value) => {
@@ -54,6 +54,10 @@ export function object<T extends Record<string, unknown>>(
     }
     type Key = keyof T & string;
     const entries = Object.entries(shape) as [Key, ParryParser<T[Key]>][];
+    const missingKey = entries.find(([key]) => !Object.hasOwn(value, key))?.[0];
+    if (missingKey !== undefined) {
+      return err((r) => `${r}.${missingKey} is missing`);
+    }
     const reduced = entries.reduce<ParryResult<T>>(
       (acc, [key]) => {
         if (isErr(acc)) return acc;
@@ -150,4 +154,17 @@ export function optional<T>(
 
 export function nullable<T>(parser: ParryParser<T>): ParryParser<T | null> {
   return oneOf(parser, literal(null));
+}
+
+export function record(): ParryParser<Record<string, unknown>> {
+  return (value) => {
+    if (typeof value !== "object" || value === null || Array.isArray(value)) {
+      return err((ref) => `${ref} is not an object`);
+    }
+    return ok(Object.fromEntries(Object.entries(value)));
+  };
+}
+
+export function unknown(): ParryParser<unknown> {
+  return (v) => ok(v);
 }
