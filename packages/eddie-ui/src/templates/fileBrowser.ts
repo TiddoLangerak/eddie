@@ -93,12 +93,11 @@ function renderTreeEntry(
       entry.isBeancount && entry.path === currentFile ? "active" : "";
     const other = entry.isBeancount ? "" : " file-tree-file-other";
     if (entry.isBeancount) {
-      const query = new HtmlString(`file=${encodeURIComponent(entry.path)}`);
       return html`
 			<li class="file-tree-file ${active}${other}" data-depth="${String(depth)}">
 				<div class="file-tree-row">
 					<span class="file-tree-icon" aria-hidden="true"></span>
-					<a class="file-tree-name" href="/?${query}">${entry.name}</a>
+					<a class="file-tree-name" href="/?file=${encodeURIComponent(entry.path)}">${entry.name}</a>
 				</div>
 			</li>
 		`;

@@ -17,17 +17,25 @@ function pathBreadcrumbs(path: string): HtmlString {
   return parts.reduce((acc, part) => html`${acc}${part}`, HtmlString.EMPTY);
 }
 
-function editorHeader(currentFile: string): HtmlString {
+function editorHeader(options: {
+  currentFile: string;
+  showSaveButton: boolean;
+}): HtmlString {
+  const { currentFile, showSaveButton } = options;
+  const saveBtn = showSaveButton
+    ? html`<button type="button" class="editor-save-btn" id="editor-save-btn">Save</button>`
+    : HtmlString.EMPTY;
   return html`
 		<div class="editor-header">
 			<nav class="breadcrumbs" aria-label="File path">${pathBreadcrumbs(currentFile)}</nav>
+			${saveBtn}
 		</div>
 	`;
 }
 
 export type EditorState =
-  | { tag: "parsed"; value: BeancountFile }
-  | { tag: "parseError"; error: ParseError; content: string }
+  | { type: "success"; value: BeancountFile }
+  | { type: "error"; error: ParseError; content: string }
   | null;
 
 function parseErrorSourceView(content: string, error: ParseError): HtmlString {
@@ -78,16 +86,16 @@ export function editor(
   if (state === null) {
     return html`
 			<main class="editor-container">
-				${editorHeader(currentFile)}
+				${editorHeader({ currentFile, showSaveButton: false })}
 				<p class="no-file">No content.</p>
 			</main>
 		`;
   }
 
-  if (state.tag === "parseError") {
+  if (state.type === "error") {
     return html`
 			<main class="editor-container">
-				${editorHeader(currentFile)}
+				${editorHeader({ currentFile, showSaveButton: false })}
 				${parseErrorSourceView(state.content, state.error)}
 			</main>
 		`;
@@ -95,7 +103,7 @@ export function editor(
 
   return html`
 		<main class="editor-container">
-			${editorHeader(currentFile)}
+			${editorHeader({ currentFile, showSaveButton: true })}
 			${directivesView(state.value, currentFile)}
 		</main>
 	`;
