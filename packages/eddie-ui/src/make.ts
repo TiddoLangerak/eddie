@@ -11,7 +11,7 @@ export async function make(dst: string): Promise<boolean> {
   const srcPath = join(srcStaticDir, changeExtension(rel, ".js", ".ts"));
   if (!(await fileExists(srcPath))) return false;
 
-  if (await isNewer(srcPath, dst)) {
+  if (!(await fileExists(dst)) || await isNewer(srcPath, dst)) {
     try {
       await compileTs({ src: srcPath, dest: dst });
     } catch {
