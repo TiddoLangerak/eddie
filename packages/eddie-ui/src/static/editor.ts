@@ -1,19 +1,30 @@
-import type { BeancountFile, Directive, Posting } from "@tiddo/beancount-types";
+import {
+  type BeancountFile,
+  type Directive,
+  type Posting,
+  beancountFile,
+} from "@tiddo/beancount-types";
+import { isErr, object, string } from "@tiddo/eddie-parry";
 
 export interface BeancountData {
   file: string;
   model: BeancountFile;
 }
 
+const beancountData = object({ file: string(), model: beancountFile });
+
 function getData(): BeancountData | null {
   const el = document.getElementById("beancount-data");
   if (!el || !el.textContent) return null;
+  let json: unknown;
   try {
-    // TODO: proper validation of parsed JSON instead of type assertion
-    return JSON.parse(el.textContent) as BeancountData;
+    json = JSON.parse(el.textContent);
   } catch {
     return null;
   }
+  const parsed = beancountData(json);
+  if (isErr(parsed)) return null;
+  return parsed.value;
 }
 
 function getCurrentFile(): string {

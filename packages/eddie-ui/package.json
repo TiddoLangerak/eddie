@@ -24,6 +24,7 @@
     "@tiddo/beancount-types": "*",
     "@tiddo/beancount-parser": "*",
     "@tiddo/beancount-formatter": "*",
+    "@tiddo/eddie-parry": "*",
     "@tiddo/eddie-utils": "*"
   }
 }

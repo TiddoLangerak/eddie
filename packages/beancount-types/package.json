@@ -18,5 +18,8 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "tsc -b"
+  },
+  "dependencies": {
+    "@tiddo/eddie-parry": "*"
   }
 }

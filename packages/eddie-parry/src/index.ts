@@ -14,9 +14,11 @@ export {
   nullable,
   number,
   object,
+  oneOf,
   optional,
+  record,
   string,
   tuple,
   type ObjectShape,
-  oneOf,
+  unknown,
 } from "./parsers.ts";
