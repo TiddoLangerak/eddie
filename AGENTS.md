@@ -32,3 +32,4 @@
 - **When in worktrees, commit changes.** When working in a worktree, commit your changes to a branch while making them.
 - **Typecheck & test when making changes**. If either fails, fix it, unless requested not to.
 - **Use `nvm use && npm run format` to fix formatting issues.** Note that this command changes files, so make sure to refresh your context.
+- **Keep READMEs up-to-date when making changes.** When you change a package’s behavior, API, or scripts, update the relevant README so it stays accurate.
