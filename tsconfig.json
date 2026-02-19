@@ -16,7 +16,8 @@
     { "path": "./packages/beancount-parser" },
     { "path": "./packages/beancount-formatter" },
     { "path": "./packages/eddie-ui" },
-    { "path": "./packages/eddie-utils" }
+    { "path": "./packages/eddie-utils" },
+    { "path": "./packages/eddie-parry" }
   ],
   "files": []
 }
