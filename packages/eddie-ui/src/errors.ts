@@ -3,7 +3,6 @@ export class HttpResponseError extends Error {
 
   constructor(message: string, statusCode: number) {
     super(message);
-    this.name = "HttpResponseError";
     this.statusCode = statusCode;
   }
 }
@@ -13,7 +12,6 @@ export class FormDataParseError extends HttpResponseError {
 
   constructor(field: string, message: string) {
     super(`${message} (field: ${field})`, 400);
-    this.name = "FormDataParseError";
     this.field = field;
   }
 }
