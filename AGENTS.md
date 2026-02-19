@@ -19,7 +19,7 @@
       it('does something else', () => {})
   })
   ```
-- **Structure code for reading top-to-bottom.**. E.g. generally speaking we want the "main" functions at the top, and helper function below. I.e. functions are used before defined.
+- **Order functions so the file reads top-to-bottom.** Put entry-point or “main” logic at the top of the file; put helper/implementation functions below it. When reading from line 1 downward, the reader should see the high-level flow first and encounter each function’s definition only after seeing where it is called. Do not put helpers at the top and main logic at the bottom.
 
 ---
 
