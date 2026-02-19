@@ -1,0 +1,22 @@
+{
+  "name": "@tiddo/eddie-parry",
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    "./*": {
+      "development": "./src/*.ts",
+      "types": "./src/*.ts",
+      "default": "./dist/*.js"
+    },
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --experimental-strip-types --conditions=development src/**/*.test.ts",
+    "build": "tsc -b"
+  }
+}
