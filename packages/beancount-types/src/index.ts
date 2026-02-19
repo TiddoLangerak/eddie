@@ -198,3 +198,9 @@ export interface Custom {
   links?: string[];
   formatting: FormattingInfo;
 }
+
+export {
+  isErr,
+  isOk,
+  parseBeancountFile,
+} from "./parser.ts";

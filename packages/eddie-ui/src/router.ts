@@ -1,5 +1,9 @@
 import { join } from "node:path";
-import type { BeancountFile } from "@tiddo/beancount-types";
+import {
+  type BeancountFile,
+  isErr,
+  parseBeancountFile,
+} from "@tiddo/beancount-types";
 import { fileExists } from "@tiddo/eddie-utils/files";
 import type { RouteContext } from "./beancountController.ts";
 import {
@@ -22,17 +26,24 @@ function parseSaveBody(body: string): { file: string; model: BeancountFile } {
   } catch {
     throw new HttpResponseError("Invalid JSON body", 400);
   }
-  if (typeof json !== "object" || json === null) {
+  if (!isRecord(json)) {
     throw new HttpResponseError("Invalid JSON body", 400);
   }
-  const obj = json as Record<string, unknown>;
-  if (typeof obj.file !== "string") {
+  if (typeof json.file !== "string") {
     throw new HttpResponseError("Missing or invalid file", 400);
   }
-  if (typeof obj.model !== "object" || obj.model === null) {
+  if (typeof json.model !== "object" || json.model === null) {
     throw new HttpResponseError("Missing or invalid model", 400);
   }
-  return { file: obj.file, model: obj.model as BeancountFile };
+  const parsed = parseBeancountFile(json.model);
+  if (isErr(parsed)) {
+    throw new HttpResponseError(`Invalid model: ${parsed.error("model")}`, 400);
+  }
+  return { file: json.file, model: parsed.value };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 export function createRouter(ctx: RouteContext): Router {

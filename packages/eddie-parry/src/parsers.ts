@@ -54,10 +54,6 @@ export function object<T extends Record<string, unknown>>(
     }
     type Key = keyof T & string;
     const entries = Object.entries(shape) as [Key, ParryParser<T[Key]>][];
-    const missingKey = entries.find(([key]) => !Object.hasOwn(value, key))?.[0];
-    if (missingKey !== undefined) {
-      return err((r) => `${r}.${missingKey} is missing`);
-    }
     const reduced = entries.reduce<ParryResult<T>>(
       (acc, [key]) => {
         if (isErr(acc)) return acc;

@@ -1,4 +1,10 @@
-import type { BeancountFile, Directive, Posting } from "@tiddo/beancount-types";
+import {
+  type BeancountFile,
+  type Directive,
+  type Posting,
+  isErr,
+  parseBeancountFile,
+} from "@tiddo/beancount-types";
 
 export interface BeancountData {
   file: string;
@@ -8,12 +14,22 @@ export interface BeancountData {
 function getData(): BeancountData | null {
   const el = document.getElementById("beancount-data");
   if (!el || !el.textContent) return null;
+  let json: unknown;
   try {
-    // TODO: proper validation of parsed JSON instead of type assertion
-    return JSON.parse(el.textContent) as BeancountData;
+    json = JSON.parse(el.textContent);
   } catch {
     return null;
   }
+  if (!isRecord(json)) return null;
+  if (typeof json.file !== "string") return null;
+  if (typeof json.model !== "object" || json.model === null) return null;
+  const parsed = parseBeancountFile(json.model);
+  if (isErr(parsed)) return null;
+  return { file: json.file, model: parsed.value };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function getCurrentFile(): string {
