@@ -1,8 +1,8 @@
 import { HtmlString, html } from "../html.ts";
+import type { BeancountData } from "../static/editor.ts";
 import type { EditorState } from "./editor.ts";
 import { editor } from "./editor.ts";
 import { fileBrowser } from "./fileBrowser.ts";
-import type { BeancountData } from "../static/editor.ts";
 
 import type { WorkspaceFile } from "../beancountController.ts";
 

@@ -24,11 +24,14 @@ function getCurrentFile(): string {
 function getNumberAttribute(el: Element | null, attr: string): number | null {
   const value = el?.getAttribute(attr);
   if (value == null) return null;
-  const n = parseInt(value, 10);
+  const n = Number.parseInt(value, 10);
   return Number.isNaN(n) ? null : n;
 }
 
-function findPosting(directive: Directive, postingIndex: number): Posting | null {
+function findPosting(
+  directive: Directive,
+  postingIndex: number,
+): Posting | null {
   if (directive.type !== "transaction") return null;
   const p = directive.postings[postingIndex];
   return p ?? null;
@@ -42,19 +45,18 @@ function fieldPath(fieldName: string): string[] {
 function setValue(obj: object, path: string[], value: unknown): void {
   const record = obj as Record<string, unknown>;
   const segments = path.slice(0, -1);
-  const parent = segments.reduce(
-    (current, key, i) => {
-      const next = current[key];
-      if (next == null) {
-        current[key] = {};
-      } else if (typeof next !== "object" || Array.isArray(next)) {
-        const pathSoFar = path.slice(0, i + 1).join(".");
-        throw new Error(`Expected object at path ${pathSoFar}, got ${typeof next}`);
-      }
-      return current[key] as Record<string, unknown>;
-    },
-    record,
-  );
+  const parent = segments.reduce((current, key, i) => {
+    const next = current[key];
+    if (next == null) {
+      current[key] = {};
+    } else if (typeof next !== "object" || Array.isArray(next)) {
+      const pathSoFar = path.slice(0, i + 1).join(".");
+      throw new Error(
+        `Expected object at path ${pathSoFar}, got ${typeof next}`,
+      );
+    }
+    return current[key] as Record<string, unknown>;
+  }, record);
   parent[path[path.length - 1]] = value;
 }
 
@@ -87,9 +89,11 @@ function initEditor(): void {
     setValue(target, path, (el.textContent ?? "").trim());
   }
 
-  document.querySelectorAll("[data-field][contenteditable=\"true\"]").forEach((el) => {
+  for (const el of document.querySelectorAll(
+    '[data-field][contenteditable="true"]',
+  )) {
     el.addEventListener("blur", onBlur);
-  });
+  }
 
   const saveBtn = document.getElementById("editor-save-btn");
   if (saveBtn) {
@@ -105,15 +109,20 @@ function initEditor(): void {
             window.location.href = res.url;
             return;
           }
-          if (res.ok) return res.text().then(() => { window.location.reload(); });
+          if (res.ok)
+            return res.text().then(() => {
+              window.location.reload();
+            });
           return res.text().then((t) => {
             saveBtn.removeAttribute("disabled");
-            alert("Save failed: " + t);
+            alert(`Save failed: ${t}`);
           });
         })
         .catch((err) => {
           saveBtn.removeAttribute("disabled");
-          alert("Save failed: " + (err instanceof Error ? err.message : String(err)));
+          alert(
+            `Save failed: ${err instanceof Error ? err.message : String(err)}`,
+          );
         });
     });
   }

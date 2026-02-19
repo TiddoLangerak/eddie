@@ -1,7 +1,7 @@
-import { changeExtension, fileExists, isNewer } from "@tiddo/eddie-utils/files";
 import { join, relative } from "node:path";
-import { compileTs } from "./typescript.ts";
+import { changeExtension, fileExists, isNewer } from "@tiddo/eddie-utils/files";
 import { distStaticDir, srcStaticDir } from "./paths.ts";
+import { compileTs } from "./typescript.ts";
 
 export async function make(dst: string): Promise<boolean> {
   const rel = relative(distStaticDir, dst);

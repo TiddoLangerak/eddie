@@ -1,5 +1,5 @@
-import type { ServerResponse } from "node:http";
 import { readFile } from "node:fs/promises";
+import type { ServerResponse } from "node:http";
 import { extname } from "node:path";
 import type { HtmlString } from "./html.ts";
 
@@ -48,7 +48,10 @@ export async function sendFile(
   }
 }
 
-export function sendResponse(res: ServerResponse, response: HttpResponse): void {
+export function sendResponse(
+  res: ServerResponse,
+  response: HttpResponse,
+): void {
   if ("redirect" in response) {
     sendRedirect(res, response.redirect);
   } else {

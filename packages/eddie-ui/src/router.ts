@@ -1,7 +1,6 @@
+import { join } from "node:path";
 import type { BeancountFile } from "@tiddo/beancount-types";
 import { fileExists } from "@tiddo/eddie-utils/files";
-import { join } from "node:path";
-import { distStaticDir, staticDir } from "./paths.ts";
 import type { RouteContext } from "./beancountController.ts";
 import {
   handleFormat,
@@ -11,6 +10,7 @@ import {
 } from "./beancountController.ts";
 import { HttpResponseError } from "./errors.ts";
 import { make } from "./make.ts";
+import { distStaticDir, staticDir } from "./paths.ts";
 import { formString, parseFormData, readBody } from "./request.ts";
 import { sendError, sendFile, sendHtml, sendResponse } from "./response.ts";
 import { RouteBuilder, type Router } from "./routing.ts";

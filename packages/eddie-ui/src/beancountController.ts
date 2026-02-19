@@ -5,8 +5,8 @@ import { formatBeancountFile } from "@tiddo/beancount-formatter";
 import { ParseError, parseBeancount } from "@tiddo/beancount-parser";
 import type { BeancountFile } from "@tiddo/beancount-types";
 import { fileExists } from "@tiddo/eddie-utils/files";
-import type { HttpResponse } from "./response.ts";
 import { HtmlString, html } from "./html.ts";
+import type { HttpResponse } from "./response.ts";
 import type { EditorState } from "./templates/editor.ts";
 import { layout } from "./templates/layout.ts";
 
@@ -148,8 +148,7 @@ export async function handleSave(
     await writeFile(join(ctx.workspace, file), formatted);
     return { redirect: `/?file=${encodeURIComponent(file)}&saved=true` };
   } catch (error: unknown) {
-    const errorMessage =
-      error instanceof Error ? error.message : String(error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     const message = html`
       <div class="message error">Save error: ${errorMessage}</div>
     `;
