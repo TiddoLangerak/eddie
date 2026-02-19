@@ -2,6 +2,7 @@ import { HtmlString, html } from "../html.ts";
 import type { EditorState } from "./editor.ts";
 import { editor } from "./editor.ts";
 import { fileBrowser } from "./fileBrowser.ts";
+import type { BeancountData } from "../static/editor.ts";
 
 import type { WorkspaceFile } from "../beancountController.ts";
 
@@ -21,6 +22,17 @@ export function layout(options: LayoutOptions): HtmlString {
     message = HtmlString.EMPTY,
     state = null,
   } = options;
+  const beancountData: BeancountData | null =
+    currentFile != null && state?.type === "success"
+      ? { file: currentFile, model: state.value }
+      : null;
+  const dataScript =
+    beancountData != null
+      ? html`
+				${HtmlString.jsonScript(beancountData, "beancount-data")}
+				<script type="module" src="/static/editor.js"></script>
+			`
+      : HtmlString.EMPTY;
   return html`<!DOCTYPE html>
 		<html lang="en">
 			<head>
@@ -30,7 +42,7 @@ export function layout(options: LayoutOptions): HtmlString {
 				<link rel="stylesheet" href="/static/style.css">
 			</head>
 			<body>
-				<div id="app">
+				<div id="app" data-current-file="${currentFile ?? ""}">
 					<h1>Eddie - Beancount Editor</h1>
 					${message}
 					<div class="layout">
@@ -39,6 +51,7 @@ export function layout(options: LayoutOptions): HtmlString {
 					</div>
 				</div>
 				<script src="/static/file-browser.js"></script>
+				${dataScript}
 			</body>
 		</html>`;
 }

@@ -21,62 +21,70 @@ function resolveIncludePath(
   return resolved.replace(/\\/g, "/");
 }
 
-function directiveSummary(
+function editableSpan(field: string, text: string): HtmlString {
+  return html`<span contenteditable="true" data-field="${field}">${text}</span>`;
+}
+
+function directiveDetailsCell(
   d: Directive,
   currentFile: string | null,
 ): HtmlString {
   switch (d.type) {
     case "transaction": {
-      const payeeNarration =
-        d.payee != null ? `${d.payee} — ${d.narration}` : d.narration;
-      const tagsLinks = [
-        ...d.tags.map((tag) => tag),
-        ...d.links.map((link) => link),
-      ];
-      const meta = tagsLinks.length > 0 ? ` [${tagsLinks.join(" ")}]` : "";
-      return html`<span class="directive-summary">${payeeNarration}${meta}</span>`;
+      const payeePart =
+        d.payee != null
+          ? html`${editableSpan("payee", d.payee)} — `
+          : HtmlString.EMPTY;
+      return html`${payeePart}${editableSpan("narration", d.narration)}`;
     }
     case "balance":
-      return html`<span class="directive-summary">${d.account}: ${formatAmount(d.amount)}</span>`;
+      return html`${editableSpan("account", d.account)}: ${editableSpan("amount-number", d.amount.number)} ${editableSpan("amount-commodity", d.amount.commodity)}`;
     case "open":
-      return html`<span class="directive-summary">${d.account}${d.commodities.length > 0 ? ` (${d.commodities.join(", ")})` : ""}</span>`;
+      return html`${editableSpan("account", d.account)}`;
     case "close":
-      return html`<span class="directive-summary">${d.account}</span>`;
+      return html`${editableSpan("account", d.account)}`;
     case "commodity":
-      return html`<span class="directive-summary">${d.commodity}</span>`;
+      return html`${editableSpan("commodity", d.commodity)}`;
     case "pad":
-      return html`<span class="directive-summary">${d.account} ← ${d.sourceAccount}</span>`;
+      return html`${editableSpan("account", d.account)} ← ${editableSpan("sourceAccount", d.sourceAccount)}`;
     case "note":
-      return html`<span class="directive-summary">${d.account}: ${d.comment}</span>`;
+      return html`${editableSpan("account", d.account)}: ${editableSpan("comment", d.comment)}`;
     case "document":
-      return html`<span class="directive-summary">${d.account}: ${d.filename}</span>`;
+      return html`${editableSpan("account", d.account)}: ${editableSpan("filename", d.filename)}`;
     case "price":
-      return html`<span class="directive-summary">${d.commodity} = ${formatAmount(d.amount)}</span>`;
+      return html`${editableSpan("commodity", d.commodity)} = ${editableSpan("amount-number", d.amount.number)} ${editableSpan("amount-commodity", d.amount.commodity)}`;
     case "event":
-      return html`<span class="directive-summary">${d.eventType}: ${d.description}</span>`;
+      return html`${editableSpan("eventType", d.eventType)}: ${editableSpan("description", d.description)}`;
     case "query":
-      return html`<span class="directive-summary">${d.name}</span>`;
+      return html`${editableSpan("name", d.name)}`;
     case "custom":
-      return html`<span class="directive-summary">${d.customType} ${d.values.map(String).join(" ")}</span>`;
+      return html`${editableSpan("customType", d.customType)} ${d.values.map(String).join(" ")}`;
     case "include": {
       const href = `?file=${encodeURIComponent(resolveIncludePath(currentFile, d.filename))}`;
-      return html`<span class="directive-summary"><a href="${href}" class="include-link">${d.filename}</a></span>`;
+      return html`<a href="${href}" class="include-link">${d.filename}</a>`;
     }
     case "plugin":
-      return html`<span class="directive-summary">${d.module}${d.config != null ? ` ${d.config}` : ""}</span>`;
+      return html`${d.module}${d.config != null ? ` ${d.config}` : ""}`;
     case "option":
-      return html`<span class="directive-summary">${d.name} = ${d.value}</span>`;
+      return html`${d.name} = ${d.value}`;
     default:
       return unreachable(d);
   }
 }
 
-function postingRow(p: Posting): HtmlString {
-  const amountStr = p.amount != null ? formatAmount(p.amount) : "";
-  const costStr = p.cost != null ? `{${formatAmount(p.cost)}}` : "";
-  const priceStr = p.price != null ? `@ ${formatAmount(p.price)}` : "";
-  const parts = [p.account, amountStr, costStr, priceStr].filter(Boolean);
-  return html`<tr class="posting-row"><td colspan="3" class="posting-cell">${parts.join(" ")}</td></tr>`;
+function postingRow(
+  p: Posting,
+  directiveIndex: number,
+  postingIndex: number,
+): HtmlString {
+  const accountSpan = editableSpan("account", p.account);
+  let amountPart = HtmlString.EMPTY;
+  if (p.amount != null) {
+    amountPart = html` ${editableSpan("amount-number", p.amount.number)} ${editableSpan("amount-commodity", p.amount.commodity)}`;
+  }
+  const costStr = p.cost != null ? ` {${formatAmount(p.cost)}}` : "";
+  const priceStr = p.price != null ? ` @ ${formatAmount(p.price)}` : "";
+  return html`<tr class="posting-row" data-directive-index="${directiveIndex}" data-posting-index="${postingIndex}"><td colspan="3" class="posting-cell">${accountSpan}${amountPart}${costStr}${priceStr}</td></tr>`;
 }
 
 function directiveDate(d: Directive): string {
@@ -96,18 +104,23 @@ function directiveRow(
   currentFile: string | null,
 ): HtmlString {
   const typeLabel = d.type === "transaction" ? "txn" : d.type;
-  const summary = directiveSummary(d, currentFile);
+  const dateStr = directiveDate(d);
+  const dateCell =
+    dateStr !== ""
+      ? html`<td class="directive-date">${editableSpan("date", dateStr)}</td>`
+      : html`<td class="directive-date"></td>`;
+  const details = directiveDetailsCell(d, currentFile);
   const base = html`<tr class="directive-row directive-type-${typeLabel}" data-directive-index="${String(index)}">
-		<td class="directive-date">${directiveDate(d)}</td>
+		${dateCell}
 		<td class="directive-type">${typeLabel}</td>
-		<td class="directive-details">${summary}</td>
+		<td class="directive-details">${details}</td>
 	</tr>`;
 
   if (d.type === "transaction") {
     const postingRows = d.postings
-      .map((p) => postingRow(p))
+      .map((p, i) => postingRow(p, index, i))
       .reduce(joining(html`\n`), HtmlString.EMPTY);
-    return new HtmlString(
+    return HtmlString.unsafe(
       base.toString() + (postingRows.toString() ? postingRows.toString() : ""),
     );
   }

@@ -5,16 +5,17 @@ import { formatBeancountFile } from "@tiddo/beancount-formatter";
 import { ParseError, parseBeancount } from "@tiddo/beancount-parser";
 import type { BeancountFile } from "@tiddo/beancount-types";
 import { fileExists } from "@tiddo/eddie-utils/files";
+import type { HttpResponse } from "./response.ts";
 import { HtmlString, html } from "./html.ts";
 import type { EditorState } from "./templates/editor.ts";
 import { layout } from "./templates/layout.ts";
 
 function tryParse(content: string): EditorState {
   try {
-    return { tag: "parsed", value: parseBeancount(content) };
+    return { type: "success", value: parseBeancount(content) };
   } catch (error: unknown) {
     if (error instanceof ParseError) {
-      return { tag: "parseError", error: error, content };
+      return { type: "error", error: error, content };
     }
     throw error;
   }
@@ -107,27 +108,29 @@ export async function handleView(
 export async function handleSave(
   ctx: RouteContext,
   file: string,
-  content: string,
-): Promise<{ redirect: string } | { html: HtmlString }> {
+  model: BeancountFile,
+): Promise<HttpResponse> {
   const files = await getWorkspaceFiles(ctx.workspace);
 
-  if (!file || !content) {
-    const message = html`<div class="message error">Missing file or content</div>`;
+  if (!file) {
+    const message = html`<div class="message error">Missing file</div>`;
+    const content = formatBeancountFile(model);
     const state = tryParse(content);
     return {
       html: layout({
         workspace: ctx.workspace,
         files,
-        currentFile: file || null,
+        currentFile: null,
         message,
         state,
       }),
+      status: 400,
     };
   }
 
   if (!isValidPath(ctx.workspace, file)) {
     const message = html`<div class="message error">Invalid file path</div>`;
-    const state = tryParse(content);
+    const state: EditorState = { type: "success", value: model };
     return {
       html: layout({
         workspace: ctx.workspace,
@@ -136,11 +139,32 @@ export async function handleSave(
         message,
         state,
       }),
+      status: 400,
     };
   }
 
-  await writeFile(join(ctx.workspace, file), content);
-  return { redirect: `/?file=${encodeURIComponent(file)}&saved=true` };
+  try {
+    const formatted = formatBeancountFile(model);
+    await writeFile(join(ctx.workspace, file), formatted);
+    return { redirect: `/?file=${encodeURIComponent(file)}&saved=true` };
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : String(error);
+    const message = html`
+      <div class="message error">Save error: ${errorMessage}</div>
+    `;
+    const state: EditorState = { type: "success", value: model };
+    return {
+      html: layout({
+        workspace: ctx.workspace,
+        files,
+        currentFile: file,
+        message,
+        state,
+      }),
+      status: 400,
+    };
+  }
 }
 
 export async function handleParse(
@@ -164,7 +188,7 @@ export async function handleParse(
 
   const state = tryParse(content);
   const message =
-    state?.tag === "parsed"
+    state?.type === "success"
       ? html`
 			<div class="message success">
 				<strong>Parse successful</strong>

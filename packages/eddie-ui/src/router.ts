@@ -1,6 +1,7 @@
-import { readFile, stat } from "node:fs/promises";
-import { extname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import type { BeancountFile } from "@tiddo/beancount-types";
+import { fileExists } from "@tiddo/eddie-utils/files";
+import { join } from "node:path";
+import { distStaticDir, staticDir } from "./paths.ts";
 import type { RouteContext } from "./beancountController.ts";
 import {
   handleFormat,
@@ -8,18 +9,31 @@ import {
   handleSave,
   handleView,
 } from "./beancountController.ts";
+import { HttpResponseError } from "./errors.ts";
+import { make } from "./make.ts";
 import { formString, parseFormData, readBody } from "./request.ts";
-import { sendError, sendHtml, sendRedirect } from "./response.ts";
+import { sendError, sendFile, sendHtml, sendResponse } from "./response.ts";
 import { RouteBuilder, type Router } from "./routing.ts";
 
-const __dirname = fileURLToPath(new URL(".", import.meta.url));
-
-const MIME_TYPES: Record<string, string> = {
-  ".html": "text/html",
-  ".css": "text/css",
-  ".js": "application/javascript",
-  ".json": "application/json",
-};
+function parseSaveBody(body: string): { file: string; model: BeancountFile } {
+  let json: unknown;
+  try {
+    json = JSON.parse(body);
+  } catch {
+    throw new HttpResponseError("Invalid JSON body", 400);
+  }
+  if (typeof json !== "object" || json === null) {
+    throw new HttpResponseError("Invalid JSON body", 400);
+  }
+  const obj = json as Record<string, unknown>;
+  if (typeof obj.file !== "string") {
+    throw new HttpResponseError("Missing or invalid file", 400);
+  }
+  if (typeof obj.model !== "object" || obj.model === null) {
+    throw new HttpResponseError("Missing or invalid model", 400);
+  }
+  return { file: obj.file, model: obj.model as BeancountFile };
+}
 
 export function createRouter(ctx: RouteContext): Router {
   const builder = new RouteBuilder();
@@ -34,15 +48,9 @@ export function createRouter(ctx: RouteContext): Router {
 
   builder.on("POST", "/save", async (req, res) => {
     const body = await readBody(req);
-    const formData = parseFormData(body);
-    const file = formString(formData, "file");
-    const content = formString(formData, "content");
-    const result = await handleSave(ctx, file, content);
-    if ("redirect" in result) {
-      sendRedirect(res, result.redirect);
-    } else {
-      sendHtml(res, result.html);
-    }
+    const { file, model } = parseSaveBody(body);
+    const result = await handleSave(ctx, file, model);
+    sendResponse(res, result);
   });
 
   builder.on("POST", "/parse", async (req, res) => {
@@ -72,29 +80,19 @@ export function createRouter(ctx: RouteContext): Router {
       return;
     }
 
-    const staticDir = join(__dirname, "..", "static");
-    const filePath = join(staticDir, relativePath);
+    const plainPath = join(staticDir, relativePath);
 
-    if (!filePath.startsWith(staticDir)) {
-      sendError(res, "Invalid path", 400);
+    if (await fileExists(plainPath)) {
+      await sendFile(res, plainPath);
       return;
     }
 
-    try {
-      const stats = await stat(filePath);
-      if (!stats.isFile()) {
-        sendError(res, "Not found", 404);
-        return;
-      }
-
-      const content = await readFile(filePath);
-      const ext = extname(filePath);
-      const mimeType = MIME_TYPES[ext] || "application/octet-stream";
-      res.writeHead(200, { "Content-Type": mimeType });
-      res.end(content);
-    } catch {
+    const distPath = join(distStaticDir, relativePath);
+    if (!(await make(distPath))) {
       sendError(res, "Not found", 404);
+      return;
     }
+    await sendFile(res, distPath);
   });
 
   return builder.build();

@@ -293,6 +293,24 @@ h1 {
   border-radius: var(--radius-sm);
 }
 
+.editor-save-btn {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-surface);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.editor-save-btn:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+.editor-save-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .breadcrumbs {
   display: flex;
   align-items: center;
@@ -420,6 +438,16 @@ button:hover {
 .directives-table .col-type {
   width: 6rem;
   white-space: nowrap;
+}
+
+.directives-table [contenteditable="true"] {
+  outline: 1px solid transparent;
+  border-radius: var(--radius-xs);
+  min-width: 0.5em;
+}
+.directives-table [contenteditable="true"]:focus {
+  outline-color: var(--color-primary);
+  outline-width: 1px;
 }
 
 .directive-row:hover {
