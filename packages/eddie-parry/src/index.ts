@@ -18,5 +18,5 @@ export {
   string,
   tuple,
   type ObjectShape,
-  union,
+  oneOf,
 } from "./parsers.ts";

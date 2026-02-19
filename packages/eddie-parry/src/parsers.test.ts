@@ -8,10 +8,10 @@ import {
   nullable,
   number,
   object,
+  oneOf,
   optional,
   string,
   tuple,
-  union,
 } from "./parsers.ts";
 import { isErr, isOk } from "./types.ts";
 
@@ -78,6 +78,12 @@ describe("object()", () => {
     const result = parser("nope");
     assert.ok(isErr(result));
     assert.match(result.error("root"), /root is not an object/);
+  });
+  it("rejects object with missing property", () => {
+    const parser = object({ a: string(), b: number() });
+    const result = parser({ a: "x" });
+    assert.ok(isErr(result));
+    assert.match(result.error("root"), /root\.b is missing/);
   });
   it("reports path on nested failure", () => {
     const parser = object({ foo: object({ bar: number() }) });
@@ -167,9 +173,9 @@ describe("literal()", () => {
   });
 });
 
-describe("union()", () => {
+describe("oneOf()", () => {
   it("returns first successful parse", () => {
-    const parser = union(string(), number());
+    const parser = oneOf(string(), number());
     const r1 = parser("hi");
     assert.ok(isOk(r1));
     assert.equal(r1.value, "hi");
@@ -178,7 +184,7 @@ describe("union()", () => {
     assert.equal(r2.value, 42);
   });
   it("fails when no variant matches", () => {
-    const parser = union(string(), number());
+    const parser = oneOf(string(), number());
     const result = parser(true);
     assert.ok(isErr(result));
     assert.match(result.error("v"), /did not match any variant/);
