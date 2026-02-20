@@ -40,6 +40,16 @@ export function layout(options: LayoutOptions): HtmlString {
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 				<title>Eddie - Beancount Editor</title>
 				<link rel="stylesheet" href="/static/style.css">
+				<script type="importmap">
+				{
+					"imports": {
+						"@tiddo/beancount-types": "/static/_pkgs/@tiddo/beancount-types/index.js",
+						"@tiddo/beancount-types/": "/static/_pkgs/@tiddo/beancount-types/",
+						"@tiddo/eddie-parry": "/static/_pkgs/@tiddo/eddie-parry/index.js",
+						"@tiddo/eddie-parry/": "/static/_pkgs/@tiddo/eddie-parry/"
+					}
+				}
+				</script>
 			</head>
 			<body>
 				<div id="app" data-current-file="${currentFile ?? ""}">

@@ -165,6 +165,23 @@ export function record(): ParryParser<Record<string, unknown>> {
   };
 }
 
+export function recordOf<T>(
+  valueParser: ParryParser<T>,
+): ParryParser<Record<string, T>> {
+  return (value) => {
+    if (typeof value !== "object" || value === null || Array.isArray(value)) {
+      return err((ref) => `${ref} is not an object`);
+    }
+    const out = {} as Record<string, T>;
+    for (const [key, val] of Object.entries(value)) {
+      const parsed = valueParser(val);
+      if (isErr(parsed)) return err((r) => parsed.error(`${r}.${key}`));
+      out[key] = parsed.value;
+    }
+    return ok(out);
+  };
+}
+
 export function unknown(): ParryParser<unknown> {
   return (v) => ok(v);
 }

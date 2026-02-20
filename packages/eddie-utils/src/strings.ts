@@ -1,6 +1,10 @@
 import { dropEnd, dropWhile } from "./arrays.ts";
 import { not } from "./predicates.ts";
 
+export function removeOptionalPrefix(str: string, prefix: string): string {
+  return str.startsWith(prefix) ? str.slice(prefix.length) : str;
+}
+
 export function isBlank(line: string): boolean {
   return line.trim() === "";
 }

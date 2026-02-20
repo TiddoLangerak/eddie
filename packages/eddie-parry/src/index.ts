@@ -17,6 +17,7 @@ export {
   oneOf,
   optional,
   record,
+  recordOf,
   string,
   tuple,
   type ObjectShape,

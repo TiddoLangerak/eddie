@@ -2,10 +2,12 @@
 
 - **Strip types:** We use "strip types" (e.g. `tsc --noEmit` or a strip-only transpiler). Only use TypeScript features that can be removed without compilation—types, interfaces, type annotations, generics. Avoid constructs that require the TypeScript compiler to emit different JavaScript (e.g. enums that emit runtime code, `namespace`, or other emit-dependent features).
 - **No `any` types or unsafe casts** (e.g. avoid `as unknown as T`, avoid `as T` etc.). Use proper typing, generics, or type guards. For runtime validation (e.g. JSON or form data), use eddie-parry. In tests, unsafe casts are fully acceptable. `as const` is fine.
+- **Type top-level parry parsers:** When defining a parser that is the root of a parse (e.g. for a request body or a config file), pass the parsed value type as a generic (e.g. `const myParser = object<MyType>({ ... })`) so the parsed value type is clear and correct.
 - **Keep methods/functions small.** Prefer single responsibility; extract helpers when logic grows. Functions shouldn't usually grow beyond 20loc, preferably even under 10loc, and ideally around 5loc.
+- **Multiline blocks use braces:** Multiline if/else/for/while bodies must have braces; do not use single-statement shorthand for multiline bodies.
 - **Prefer functional-style iteration** over vanilla `for` loops: use `.map()`, `.filter()`, `.reduce()`, `.find()`, `.some()`, `.every()` etc.
 - **Write tests** for new and changed behavior. Co-locate or mirror test layout (e.g. `*.test.ts` / `*.spec.ts` next to source or under `__tests__`). Tests aren't needed for `beancount-types`.
-- **Dependencies:** Prefer minimal dependencies; use the standard library where it's enough; when adding a dependency, note why it's needed (e.g. in a comment or PR).
+- **Dependencies:** We do not use third-party dependencies besides TypeScript. Prefer the standard library and in-repo packages; do not add new npm dependencies (e.g. no bundlers, no extra runtimes). When something would require a new dependency, solve it with TypeScript and Node built-ins instead.
 - **Format using Biome:** Run `npm run format` to format code.
 - **Be conservative with comments:** Comments aren't usually needed. Prefer descriptive naming instead.
 - **No dynamic imports:** Put imports at the top, not inline.
