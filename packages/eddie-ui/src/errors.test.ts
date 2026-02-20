@@ -7,7 +7,6 @@ describe("HttpResponseError", () => {
     const err = new HttpResponseError("Not found", 404);
     assert.equal(err.message, "Not found");
     assert.equal(err.statusCode, 404);
-    assert.equal(err.name, "HttpResponseError");
   });
 });
 

@@ -55,16 +55,18 @@ export async function readBody(req: IncomingMessage): Promise<string> {
 
 export function parseFormData(body: string): FormDataRecord {
   const parsed = new URLSearchParams(body);
-  const result: FormDataRecord = {};
-  for (const [key, value] of parsed.entries()) {
-    const existing = result[key];
-    if (existing === undefined) {
-      result[key] = value;
-    } else if (Array.isArray(existing)) {
-      existing.push(value);
-    } else {
-      result[key] = [existing, value];
-    }
-  }
-  return result;
+  return Array.from(parsed.entries()).reduce<FormDataRecord>(
+    (result, [key, value]) => {
+      const existing = result[key];
+      if (existing === undefined) {
+        result[key] = value;
+      } else if (Array.isArray(existing)) {
+        existing.push(value);
+      } else {
+        result[key] = [existing, value];
+      }
+      return result;
+    },
+    {},
+  );
 }

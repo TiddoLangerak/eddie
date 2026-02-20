@@ -12,7 +12,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isMemberOf<T>(set: Set<T>, value: unknown): value is T {
-  return set.has(value as T);
+  return (set as Set<unknown>).has(value);
 }
 
 export function string(): ParryParser<string> {

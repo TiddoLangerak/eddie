@@ -53,20 +53,27 @@ function fieldPath(fieldName: string): string[] {
   return fieldName.split("-");
 }
 
+function isRecord(x: unknown): x is Record<string, unknown> {
+  return typeof x === "object" && x !== null && !Array.isArray(x);
+}
+
 function setValue(obj: object, path: string[], value: unknown): void {
   const record = obj as Record<string, unknown>;
   const segments = path.slice(0, -1);
   const parent = segments.reduce((current, key, i) => {
     const next = current[key];
     if (next == null) {
-      current[key] = {};
-    } else if (typeof next !== "object" || Array.isArray(next)) {
+      const empty: Record<string, unknown> = {};
+      current[key] = empty;
+      return empty;
+    }
+    if (!isRecord(next)) {
       const pathSoFar = path.slice(0, i + 1).join(".");
       throw new Error(
         `Expected object at path ${pathSoFar}, got ${typeof next}`,
       );
     }
-    return current[key] as Record<string, unknown>;
+    return next;
   }, record);
   parent[path[path.length - 1]] = value;
 }
@@ -81,7 +88,8 @@ function initEditor(): void {
   const model = data.model;
 
   function onBlur(e: Event): void {
-    const el = e.target as HTMLElement;
+    if (!(e.target instanceof HTMLElement)) return;
+    const el = e.target;
     const field = el.getAttribute("data-field");
     const row = el.closest("tr");
     const directiveIndex = getNumberAttribute(row, "data-directive-index");

@@ -43,10 +43,10 @@ export function html(
   strings: TemplateStringsArray,
   ...values: unknown[]
 ): HtmlString {
-  let result = strings[0];
-  for (let i = 0; i < values.length; i++) {
-    result += escapeHtml(values[i]) + strings[i + 1];
-  }
+  const result = values.reduce<string>(
+    (acc, v, i) => acc + escapeHtml(v) + (strings[i + 1] ?? ""),
+    strings[0] ?? "",
+  );
   return HtmlString.unsafe(result);
 }
 

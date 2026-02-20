@@ -10,6 +10,7 @@
 - **Dependencies:** We do not use third-party dependencies besides TypeScript. Prefer the standard library and in-repo packages; do not add new npm dependencies (e.g. no bundlers, no extra runtimes). When something would require a new dependency, solve it with TypeScript and Node built-ins instead.
 - **Format using Biome:** Run `npm run format` to format code.
 - **Be conservative with comments:** Comments aren't usually needed. Prefer descriptive naming instead.
+- **Don't explicitly assign `name` on custom errors.** Omit `this.name = "MyError"` in Error subclasses; use `instanceof` or properties to identify errors in tests and call sites.
 - **No dynamic imports:** Put imports at the top, not inline.
 - **Node built-ins:** Use the `node:` prefix for Node.js built-in modules (e.g. `node:fs/promises`, `node:path`, `node:assert`, `node:test`).
 - **Relative imports:** Use explicit `.ts` extension in relative imports (e.g. `from "./foo.ts"`). Package imports use bare specifiers (e.g. `@tiddo/eddie-utils/files`).

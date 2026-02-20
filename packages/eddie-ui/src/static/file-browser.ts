@@ -1,9 +1,23 @@
+import {
+  array,
+  boolean,
+  isErr,
+  object,
+  optional,
+  string,
+} from "@tiddo/eddie-parry";
+
 const STORAGE_KEY_PREFIX = "eddie-filetree-";
 
 interface FileBrowserState {
   expandedPaths: string[];
   showOtherFiles: boolean;
 }
+
+const fileBrowserStateParser = object({
+  expandedPaths: optional(array(string())),
+  showOtherFiles: optional(boolean()),
+});
 
 function getStorageKey(): string | null {
   const aside = document.querySelector(".file-browser");
@@ -18,12 +32,13 @@ function loadState(): FileBrowserState {
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return { expandedPaths: [], showOtherFiles: false };
-    const data = JSON.parse(raw) as Partial<FileBrowserState>;
+    const data: unknown = JSON.parse(raw);
+    const parsed = fileBrowserStateParser(data);
+    if (isErr(parsed)) return { expandedPaths: [], showOtherFiles: false };
+    const v = parsed.value;
     return {
-      expandedPaths: Array.isArray(data.expandedPaths)
-        ? data.expandedPaths
-        : [],
-      showOtherFiles: Boolean(data.showOtherFiles),
+      expandedPaths: v.expandedPaths ?? [],
+      showOtherFiles: v.showOtherFiles ?? false,
     };
   } catch {
     return { expandedPaths: [], showOtherFiles: false };
@@ -42,15 +57,13 @@ function saveState(expandedPaths: string[], showOtherFiles: boolean): void {
 }
 
 function getExpandedPaths(): string[] {
-  const paths: string[] = [];
-  for (const folder of document.querySelectorAll(
-    ".file-tree-folder:not(.collapsed)",
-  )) {
-    const path =
-      folder instanceof HTMLElement ? folder.dataset.folderPath : undefined;
-    if (path) paths.push(path);
-  }
-  return paths;
+  return Array.from(
+    document.querySelectorAll(".file-tree-folder:not(.collapsed)"),
+  )
+    .map((folder) =>
+      folder instanceof HTMLElement ? folder.dataset.folderPath : undefined,
+    )
+    .filter((path): path is string => path !== undefined);
 }
 
 function toggleFolder(
