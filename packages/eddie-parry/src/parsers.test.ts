@@ -83,7 +83,13 @@ describe("object()", () => {
     const parser = object({ a: string(), b: number() });
     const result = parser({ a: "x" });
     assert.ok(isErr(result));
-    assert.match(result.error("root"), /root\.b is missing/);
+    assert.match(result.error("root"), /root\.b is not a number/);
+  });
+  it("accepts object with missing optional property", () => {
+    const parser = object({ a: string(), b: optional(number()) });
+    const result = parser({ a: "x" });
+    assert.ok(isOk(result));
+    assert.deepEqual(result.value, { a: "x", b: undefined });
   });
   it("reports path on nested failure", () => {
     const parser = object({ foo: object({ bar: number() }) });

@@ -43,9 +43,9 @@ export function layout(options: LayoutOptions): HtmlString {
 				<script type="importmap">
 				{
 					"imports": {
-						"@tiddo/beancount-types": "/static/_pkgs/@tiddo/beancount-types/index.js",
+						"@tiddo/beancount-types": "/static/_pkgs/@tiddo/beancount-types",
 						"@tiddo/beancount-types/": "/static/_pkgs/@tiddo/beancount-types/",
-						"@tiddo/eddie-parry": "/static/_pkgs/@tiddo/eddie-parry/index.js",
+						"@tiddo/eddie-parry": "/static/_pkgs/@tiddo/eddie-parry",
 						"@tiddo/eddie-parry/": "/static/_pkgs/@tiddo/eddie-parry/"
 					}
 				}

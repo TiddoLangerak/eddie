@@ -29,7 +29,7 @@ const pkgsRule: Rule = {
 };
 
 const staticTsRule: Rule = {
-  matches: () => true,
+  matches: (rel) => rel.endsWith(".js"),
   source: async (rel) => {
     const srcPath = join(srcStaticDir, changeExtension(rel, ".js", ".ts"));
     return (await fileExists(srcPath)) ? srcPath : null;
@@ -46,7 +46,6 @@ const RULES: Rule[] = [pkgsRule, staticTsRule];
 export async function make(dst: string): Promise<boolean> {
   const rel = relative(distStaticDir, dst);
   if (rel.startsWith("..") || rel.includes("..")) return false;
-  if (!rel.endsWith(".js")) return false;
 
   const rule = RULES.find((r) => r.matches(rel));
   if (rule == null) return false;
