@@ -11,6 +11,7 @@ import {
   fail,
   first,
   headTail,
+  isoDate,
   join,
   lineComment,
   lineEnd,
@@ -412,5 +413,13 @@ describe("lineComment", () => {
     const result = run(hashComment, "# a comment");
     assert.ok(result.ok);
     assert.equal(result.value, "# a comment");
+  });
+});
+
+describe("isoDate", () => {
+  it("parses YYYY-MM-DD format", () => {
+    const result = run(isoDate, "2024-01-15");
+    assert.ok(result.ok);
+    assert.equal(result.value, "2024-01-15");
   });
 });

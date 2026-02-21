@@ -3,6 +3,7 @@ import {
   afterWhitespace,
   blankLine,
   first,
+  isoDate,
   lineComment as lineCommentWith,
   lineEnd,
   map,
@@ -32,7 +33,7 @@ export {
 
 export const lineComment: Parser<string> = lineCommentWith(";");
 
-export const date: Parser<string> = regex(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
+export { isoDate as date };
 
 export const commodity: Parser<string> = regex(/[A-Z0-9-]+/);
 

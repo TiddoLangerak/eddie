@@ -331,3 +331,5 @@ export const quotedString: Parser<string> = first(
 export function lineComment(prefix: string): Parser<string> {
   return stringSequence(prefix, restOfLine);
 }
+
+export const isoDate: Parser<string> = regex(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
