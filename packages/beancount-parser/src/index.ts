@@ -3,16 +3,9 @@ import type {
   CommentOrBlank,
   Directive,
 } from "@tiddo/beancount-types";
+import { createState, first, map, repeated, run, sequence } from "@tiddo/combo";
+import type { Parser } from "@tiddo/combo";
 import { normalizeLineEndings } from "@tiddo/eddie-utils/files";
-import {
-  createState,
-  first,
-  map,
-  repeated,
-  run,
-  sequence,
-} from "./combinators.ts";
-import type { Parser } from "./combinators.ts";
 import { directive } from "./directives.ts";
 import { blankLinesAndComments } from "./primitives.ts";
 

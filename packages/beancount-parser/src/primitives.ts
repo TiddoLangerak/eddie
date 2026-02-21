@@ -12,8 +12,8 @@ import {
   sepByAtLeastOnce,
   sequence,
   string,
-} from "./combinators.ts";
-import type { Parser } from "./combinators.ts";
+} from "@tiddo/combo";
+import type { Parser } from "@tiddo/combo";
 import {
   account as accountLex,
   afterOptionalWhitespace,

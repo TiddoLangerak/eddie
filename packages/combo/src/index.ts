@@ -1,7 +1,3 @@
-/**
- * Parser combinator infrastructure for Beancount parsing.
- */
-
 export interface Position {
   line: number;
   column: number;

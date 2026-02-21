@@ -12,8 +12,8 @@ import {
   sepByAtLeastOnce,
   string,
   stringSequence,
-} from "./combinators.ts";
-import type { Parser } from "./combinators.ts";
+} from "@tiddo/combo";
+import type { Parser } from "@tiddo/combo";
 
 export const whitespace: Parser<string> = regex(/[ \t]+/);
 

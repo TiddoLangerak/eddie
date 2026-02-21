@@ -1,5 +1,5 @@
 {
-  "name": "@tiddo/beancount-parser",
+  "name": "@tiddo/combo",
   "version": "0.0.0",
   "type": "module",
   "exports": {
@@ -18,10 +18,5 @@
     "typecheck": "tsc --noEmit",
     "test": "node --test --experimental-strip-types --conditions=development src/**/*.test.ts",
     "build": "tsc -b"
-  },
-  "dependencies": {
-    "@tiddo/beancount-types": "*",
-    "@tiddo/combo": "*",
-    "@tiddo/eddie-utils": "*"
   }
 }

@@ -31,8 +31,8 @@ import {
   sepBy,
   sequence,
   string,
-} from "./combinators.ts";
-import type { Parser, ParserResult, ParserState } from "./combinators.ts";
+} from "@tiddo/combo";
+import type { Parser, ParserResult, ParserState } from "@tiddo/combo";
 import {
   afterOptionalWhitespace,
   afterWhitespace,

@@ -22,7 +22,7 @@ import {
   string,
   stringSequence,
   succeed,
-} from "./combinators.ts";
+} from "./index.ts";
 
 describe("succeed", () => {
   it("returns value without consuming input", () => {
