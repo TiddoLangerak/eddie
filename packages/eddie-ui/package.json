@@ -18,6 +18,7 @@
     "typecheck": "tsc --noEmit",
     "test": "node --test --experimental-strip-types --conditions=development src/**/*.test.ts",
     "build": "tsc -b",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "serve": "./serve"
   },
   "dependencies": {
