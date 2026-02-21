@@ -17,7 +17,8 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "build": "tsc -b"
+    "build": "tsc -b",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
     "@tiddo/eddie-parry": "*"
