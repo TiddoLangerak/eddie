@@ -1,11 +1,6 @@
-/**
- * Beancount directive parsers.
- */
-
 import type {
   Balance,
   Close,
-  CommentOrBlank,
   Commodity,
   Custom,
   Directive,
@@ -18,10 +13,8 @@ import type {
   Option,
   Pad,
   Plugin,
-  Posting,
   Price,
   Query,
-  Transaction,
 } from "@tiddo/beancount-types";
 import {
   first,
@@ -31,8 +24,8 @@ import {
   sepBy,
   sequence,
   string,
-} from "@tiddo/combo";
-import type { Parser, ParserResult, ParserState } from "@tiddo/combo";
+} from "@tiddo/combo/combinators";
+import type { Parser } from "@tiddo/combo/combinators";
 import {
   afterOptionalWhitespace,
   afterWhitespace,

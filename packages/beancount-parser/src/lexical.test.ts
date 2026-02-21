@@ -1,6 +1,6 @@
 import { strict as assert } from "node:assert";
 import { describe, it } from "node:test";
-import { run } from "@tiddo/combo";
+import { run } from "@tiddo/combo/combinators";
 import {
   account,
   commodity,

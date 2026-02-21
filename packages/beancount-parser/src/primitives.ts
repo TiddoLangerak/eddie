@@ -1,7 +1,3 @@
-/**
- * Primitive (compound) parsers building on lexical tokens.
- */
-
 import type { Amount, CommentOrBlank } from "@tiddo/beancount-types";
 import {
   between,
@@ -12,8 +8,8 @@ import {
   sepByAtLeastOnce,
   sequence,
   string,
-} from "@tiddo/combo";
-import type { Parser } from "@tiddo/combo";
+} from "@tiddo/combo/combinators";
+import type { Parser } from "@tiddo/combo/combinators";
 import {
   account as accountLex,
   afterOptionalWhitespace,

@@ -1,10 +1,5 @@
-import type {
-  BeancountFile,
-  CommentOrBlank,
-  Directive,
-} from "@tiddo/beancount-types";
-import { createState, first, map, repeated, run, sequence } from "@tiddo/combo";
-import type { Parser } from "@tiddo/combo";
+import type { BeancountFile } from "@tiddo/beancount-types";
+import { map, repeated, run, sequence } from "@tiddo/combo/combinators";
 import { normalizeLineEndings } from "@tiddo/eddie-utils/files";
 import { directive } from "./directives.ts";
 import { blankLinesAndComments } from "./primitives.ts";

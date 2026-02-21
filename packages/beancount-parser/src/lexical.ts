@@ -1,23 +1,26 @@
 import {
-  afterOptionalWhitespace,
-  afterWhitespace,
-  blankLine,
   first,
-  isoDate,
-  lineComment as lineCommentWith,
-  lineEnd,
   map,
-  newline,
-  number,
-  optionalWhitespace,
-  quotedString,
   regex,
   sepByAtLeastOnce,
   string,
   stringSequence,
+} from "@tiddo/combo/combinators";
+import type { Parser } from "@tiddo/combo/combinators";
+import {
+  afterOptionalWhitespace,
+  afterWhitespace,
+  blankLine,
+  isoDate,
+  lineComment as lineCommentWith,
+  lineEnd,
+  newline,
+  number,
+  optionalWhitespace,
+  quotedString,
+  restOfLine,
   whitespace,
-} from "@tiddo/combo";
-import type { Parser } from "@tiddo/combo";
+} from "@tiddo/combo/parsers";
 
 export {
   afterOptionalWhitespace,
@@ -28,6 +31,7 @@ export {
   number,
   optionalWhitespace,
   quotedString,
+  restOfLine,
   whitespace,
 };
 
@@ -61,5 +65,3 @@ export const boolean: Parser<boolean> = first(
 );
 
 export const key: Parser<string> = regex(/[a-z][a-z0-9_-]*/);
-
-export const restOfLine: Parser<string> = regex(/[^\n]*/);
