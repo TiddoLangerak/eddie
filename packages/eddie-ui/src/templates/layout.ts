@@ -60,7 +60,7 @@ export function layout(options: LayoutOptions): HtmlString {
 						${editor(currentFile, state)}
 					</div>
 				</div>
-				<script src="/static/file-browser.js"></script>
+				<script type="module" src="/static/file-browser.js"></script>
 				${dataScript}
 			</body>
 		</html>`;
