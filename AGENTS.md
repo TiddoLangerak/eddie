@@ -37,3 +37,5 @@
 - **Typecheck & test when making changes**. If either fails, fix it, unless requested not to.
 - **Use `nvm use && npm run format` to fix formatting issues.** Note that this command changes files, so make sure to refresh your context.
 - **Keep READMEs up-to-date when making changes.** When you change a package’s behavior, API, or scripts, update the relevant README so it stays accurate.
+- **Use squash merges when merging.**
+- **Merge to main locally.** If main is already checked out in another worktree, then cd into that twork tree, stash, merge, unstash.
