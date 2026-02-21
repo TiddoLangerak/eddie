@@ -30,6 +30,7 @@
 ## Agentic workflow
 
 - **Plans should be focussed and to the point.** Avoid unnecessary detail or scope creep; keep task breakdowns concise and actionable.
+- **Start with the model, especially for plans.** Before jumping into implementation, we first want to understand and model the underlying general principals involved. Ideally, the features are almost an emergent property of the model. So start with creating a model, and then build the fetaures on top of that.
 - **Run `nvm use` before npm/node commands.** Always run `nvm use` before executing any npm or node commands to ensure the correct Node.js version is active.
 - **Don't use `npx` commands.**. Instead, suggest operations to be added to `package.json` scripts.
 - **Update AGENTS.md with new learnings.** You are constantly improving yourself, so keep updating AGENTS.md based on patterns encountered in sessions.
