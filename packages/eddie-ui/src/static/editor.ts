@@ -5,6 +5,8 @@ import {
   beancountFile,
 } from "@tiddo/beancount-types";
 import { isErr, object, string } from "@tiddo/eddie-parry";
+import { type PathSegment, setValue } from "@tiddo/eddie-utils/objects";
+import { createKeyDownHandler } from "./navigation/index.ts";
 
 export interface BeancountData {
   file: string;
@@ -48,34 +50,18 @@ function findPosting(
   return p ?? null;
 }
 
-/** Converts dash-separated field name to property path, e.g. "amount-number" -> ["amount", "number"]. */
-function fieldPath(fieldName: string): string[] {
-  return fieldName.split("-");
-}
-
-function isRecord(x: unknown): x is Record<string, unknown> {
-  return typeof x === "object" && x !== null && !Array.isArray(x);
-}
-
-function setValue(obj: object, path: string[], value: unknown): void {
-  const record = obj as Record<string, unknown>;
-  const segments = path.slice(0, -1);
-  const parent = segments.reduce((current, key, i) => {
-    const next = current[key];
-    if (next == null) {
-      const empty: Record<string, unknown> = {};
-      current[key] = empty;
-      return empty;
-    }
-    if (!isRecord(next)) {
-      const pathSoFar = path.slice(0, i + 1).join(".");
-      throw new Error(
-        `Expected object at path ${pathSoFar}, got ${typeof next}`,
-      );
-    }
-    return next;
-  }, record);
-  parent[path[path.length - 1]] = value;
+/**
+ * Converts dash-separated field name to property path.
+ * Numeric segments become array indices.
+ * e.g. "amount-number" -> ["amount", "number"]
+ *      "tags" -> ["tags"]
+ *      "tags-2" -> ["tags", 2]
+ */
+function fieldPath(fieldName: string): PathSegment[] {
+  return fieldName.split("-").map((part) => {
+    const num = Number.parseInt(part, 10);
+    return Number.isNaN(num) ? part : num;
+  });
 }
 
 function initEditor(): void {
@@ -96,6 +82,7 @@ function initEditor(): void {
     const postingIndex = getNumberAttribute(row, "data-posting-index");
 
     if (!field) return;
+    if (!row) return;
     if (directiveIndex == null) return;
 
     const directive = model.directives[directiveIndex];
@@ -105,13 +92,23 @@ function initEditor(): void {
     if (target == null) return;
 
     const path = fieldPath(field);
-    setValue(target, path, (el.textContent ?? "").trim());
+    const value = (el.textContent ?? "").trim();
+    setValue(target as unknown as Record<string, unknown>, path, value);
   }
+
+  function registerFieldHandlers(el: Element): void {
+    el.addEventListener("blur", onBlur);
+    el.addEventListener("keydown", handleKeyDown);
+  }
+
+  const handleKeyDown = createKeyDownHandler({
+    onCreateField: registerFieldHandlers,
+  });
 
   for (const el of document.querySelectorAll(
     '[data-field][contenteditable="true"]',
   )) {
-    el.addEventListener("blur", onBlur);
+    registerFieldHandlers(el);
   }
 
   const saveBtn = document.getElementById("editor-save-btn");

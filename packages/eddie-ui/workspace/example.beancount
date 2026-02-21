@@ -4,7 +4,7 @@
 2024-01-01 open Expenses:Groceries USD
 2025-01-01 open Income:Salary USD
 
-2024-01-15 * "Grocery Store" "Weekly groceries"
+2024-01-15 * "Weekly groceries"
   Expenses:Groceries  50.00 EUR
   Assets:Checking  -50.00 EUR
 

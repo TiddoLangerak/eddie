@@ -25,6 +25,24 @@ function editableSpan(field: string, text: string): HtmlString {
   return html`<span contenteditable="true" data-field="${field}">${text}</span>`;
 }
 
+function pendingSpan(): HtmlString {
+  return html`<span contenteditable="true" data-field="pending"></span>`;
+}
+
+function tagsPart(tags: string[] | undefined): HtmlString {
+  if (tags == null || tags.length === 0) return HtmlString.EMPTY;
+  return tags
+    .map((tag, i) => editableSpan(`tags-${i}`, tag))
+    .reduce(joining(HtmlString.EMPTY), HtmlString.EMPTY);
+}
+
+function linksPart(links: string[] | undefined): HtmlString {
+  if (links == null || links.length === 0) return HtmlString.EMPTY;
+  return links
+    .map((link, i) => editableSpan(`links-${i}`, link))
+    .reduce(joining(HtmlString.EMPTY), HtmlString.EMPTY);
+}
+
 function directiveDetailsCell(
   d: Directive,
   currentFile: string | null,
@@ -33,12 +51,12 @@ function directiveDetailsCell(
     case "transaction": {
       const payeePart =
         d.payee != null
-          ? html`${editableSpan("payee", d.payee)} — `
+          ? html`${editableSpan("payee", d.payee)}`
           : HtmlString.EMPTY;
-      return html`${payeePart}${editableSpan("narration", d.narration)}`;
+      return html`${payeePart}${editableSpan("narration", d.narration)}${tagsPart(d.tags)}${linksPart(d.links)}${pendingSpan()}`;
     }
     case "balance":
-      return html`${editableSpan("account", d.account)}: ${editableSpan("amount-number", d.amount.number)} ${editableSpan("amount-commodity", d.amount.commodity)}`;
+      return html`${editableSpan("account", d.account)}: ${editableSpan("amount-number", d.amount.number)}${editableSpan("amount-commodity", d.amount.commodity)}`;
     case "open":
       return html`${editableSpan("account", d.account)}`;
     case "close":
@@ -52,7 +70,7 @@ function directiveDetailsCell(
     case "document":
       return html`${editableSpan("account", d.account)}: ${editableSpan("filename", d.filename)}`;
     case "price":
-      return html`${editableSpan("commodity", d.commodity)} = ${editableSpan("amount-number", d.amount.number)} ${editableSpan("amount-commodity", d.amount.commodity)}`;
+      return html`${editableSpan("commodity", d.commodity)} = ${editableSpan("amount-number", d.amount.number)}${editableSpan("amount-commodity", d.amount.commodity)}`;
     case "event":
       return html`${editableSpan("eventType", d.eventType)}: ${editableSpan("description", d.description)}`;
     case "query":
@@ -72,6 +90,16 @@ function directiveDetailsCell(
   }
 }
 
+function costPart(cost: Amount | undefined): HtmlString {
+  if (cost == null) return HtmlString.EMPTY;
+  return html`${editableSpan("cost-number", cost.number)}${editableSpan("cost-commodity", cost.commodity)}`;
+}
+
+function pricePart(price: Amount | undefined): HtmlString {
+  if (price == null) return HtmlString.EMPTY;
+  return html`${editableSpan("price-number", price.number)}${editableSpan("price-commodity", price.commodity)}`;
+}
+
 function postingRow(
   p: Posting,
   directiveIndex: number,
@@ -80,11 +108,9 @@ function postingRow(
   const accountSpan = editableSpan("account", p.account);
   let amountPart = HtmlString.EMPTY;
   if (p.amount != null) {
-    amountPart = html` ${editableSpan("amount-number", p.amount.number)} ${editableSpan("amount-commodity", p.amount.commodity)}`;
+    amountPart = html`${editableSpan("amount-number", p.amount.number)}${editableSpan("amount-commodity", p.amount.commodity)}`;
   }
-  const costStr = p.cost != null ? ` {${formatAmount(p.cost)}}` : "";
-  const priceStr = p.price != null ? ` @ ${formatAmount(p.price)}` : "";
-  return html`<tr class="posting-row" data-directive-index="${directiveIndex}" data-posting-index="${postingIndex}"><td colspan="3" class="posting-cell">${accountSpan}${amountPart}${costStr}${priceStr}</td></tr>`;
+  return html`<tr class="posting-row" data-row-type="posting" data-directive-index="${directiveIndex}" data-posting-index="${postingIndex}"><td colspan="3" class="posting-cell">${accountSpan}${amountPart}${costPart(p.cost)}${pricePart(p.price)}${pendingSpan()}</td></tr>`;
 }
 
 function directiveDate(d: Directive): string {
@@ -110,7 +136,7 @@ function directiveRow(
       ? html`<td class="directive-date">${editableSpan("date", dateStr)}</td>`
       : html`<td class="directive-date"></td>`;
   const details = directiveDetailsCell(d, currentFile);
-  const base = html`<tr class="directive-row directive-type-${typeLabel}" data-directive-index="${String(index)}">
+  const base = html`<tr class="directive-row directive-type-${typeLabel}" data-row-type="${d.type}" data-directive-index="${String(index)}">
 		${dateCell}
 		<td class="directive-type">${typeLabel}</td>
 		<td class="directive-details">${details}</td>

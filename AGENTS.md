@@ -8,6 +8,7 @@
 - **Prefer functional-style iteration** over vanilla `for` loops: use `.map()`, `.filter()`, `.reduce()`, `.find()`, `.some()`, `.every()` etc.
 - **Write tests** for new and changed behavior. Co-locate or mirror test layout (e.g. `*.test.ts` / `*.spec.ts` next to source or under `__tests__`). Tests aren't needed for `beancount-types`.
 - **Dependencies:** We do not use third-party dependencies besides TypeScript. Prefer the standard library and in-repo packages; do not add new npm dependencies (e.g. no bundlers, no extra runtimes). When something would require a new dependency, solve it with TypeScript and Node built-ins instead.
+- **General-purpose utilities go in eddie-utils:** When writing reusable helper functions (string manipulation, async utilities, object helpers, etc.), put them in `@tiddo/eddie-utils` rather than in application-specific packages. This keeps utilities discoverable and avoids duplication.
 - **Format using Biome:** Run `npm run format` to format code.
 - **Be conservative with comments:** Comments aren't usually needed. Prefer descriptive naming instead.
 - **Don't explicitly assign `name` on custom errors.** Omit `this.name = "MyError"` in Error subclasses; use `instanceof` or properties to identify errors in tests and call sites.

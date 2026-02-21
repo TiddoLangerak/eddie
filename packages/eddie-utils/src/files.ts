@@ -1,4 +1,4 @@
-import { stat } from "node:fs/promises";
+import { mkdir, stat, unlink, writeFile } from "node:fs/promises";
 import { basename, dirname, join } from "node:path";
 
 /**
@@ -58,4 +58,21 @@ export function normalizeLineEndings(input: string): string {
   return normalLineEndings.endsWith("\n")
     ? normalLineEndings
     : `${normalLineEndings}\n`;
+}
+
+export async function createDisposableFile(
+  filepath: string,
+  content: string,
+): Promise<AsyncDisposable> {
+  await mkdir(dirname(filepath), { recursive: true });
+  await writeFile(filepath, content);
+  return {
+    async [Symbol.asyncDispose]() {
+      try {
+        await unlink(filepath);
+      } catch {
+        // Ignore errors if file doesn't exist
+      }
+    },
+  };
 }

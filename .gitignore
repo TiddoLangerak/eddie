@@ -1,3 +1,6 @@
 node_modules
 packages/*/dist
 **/*.tsbuildinfo
+packages/eddie-ui/e2e/.workspace
+packages/eddie-ui/playwright-report
+packages/eddie-ui/test-results

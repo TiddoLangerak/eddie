@@ -17,6 +17,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "node --test --experimental-strip-types --conditions=development src/**/*.test.ts",
+    "test:e2e": "NODE_OPTIONS='--experimental-strip-types --conditions=development' playwright test",
     "build": "tsc -b",
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "serve": "./serve"

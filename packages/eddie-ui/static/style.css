@@ -470,6 +470,55 @@ button:hover {
   border-bottom-color: var(--color-border);
 }
 
+/* =============================================================================
+   Field prefixes and suffixes via CSS pseudo-elements
+   ============================================================================= */
+
+/* Spacing between adjacent fields */
+[data-field] + [data-field]:not([data-field="pending"]) {
+  margin-left: 0.5ch;
+}
+
+/* Payee followed by narration gets em-dash */
+[data-field="payee"] + [data-field="narration"]::before {
+  content: "— ";
+  margin-left: 0.5ch;
+}
+[data-field="payee"] + [data-field="narration"] {
+  margin-left: 0;
+}
+
+/* Cost group: { number commodity } */
+[data-field="cost-number"]::before {
+  content: "{";
+  margin-right: 0.25ch;
+}
+[data-field="cost-commodity"]::after {
+  content: "}";
+  margin-left: 0.25ch;
+}
+
+/* Price group: @ number commodity */
+[data-field="price-number"]::before {
+  content: "@";
+  margin-right: 0.5ch;
+}
+
+/* Tags: #tagname (attached) */
+[data-field^="tags"]::before {
+  content: "#";
+}
+
+/* Links: ^linkname (attached) */
+[data-field^="links"]::before {
+  content: "^";
+}
+
+/* Inline comments: ;comment (attached) */
+[data-field="inline-comment"]::before {
+  content: ";";
+}
+
 .directive-type-txn .directive-date {
   font-weight: 500;
 }

@@ -1,10 +1,11 @@
 import { strict as assert } from "node:assert";
-import { mkdtempDisposable, writeFile } from "node:fs/promises";
+import { mkdtempDisposable, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
 import {
   changeExtension,
+  createDisposableFile,
   fileExists,
   isNewer,
   normalizeLineEndings,
@@ -84,5 +85,41 @@ describe("isNewer", () => {
     await new Promise((r) => setTimeout(r, 10));
     await writeFile(ref, "ref");
     assert.equal(await isNewer(older, ref), false);
+  });
+});
+
+describe("createDisposableFile", () => {
+  it("creates file with content", async () => {
+    await using dir = await mkdtempDisposable(join(tmpdir(), "eddie-utils-"));
+    const filepath = join(dir.path, "test.txt");
+    await using _file = await createDisposableFile(filepath, "hello");
+    const content = await readFile(filepath, "utf-8");
+    assert.equal(content, "hello");
+  });
+
+  it("creates parent directories", async () => {
+    await using dir = await mkdtempDisposable(join(tmpdir(), "eddie-utils-"));
+    const filepath = join(dir.path, "nested", "dir", "test.txt");
+    await using _file = await createDisposableFile(filepath, "content");
+    assert.equal(await fileExists(filepath), true);
+  });
+
+  it("deletes file on dispose", async () => {
+    await using dir = await mkdtempDisposable(join(tmpdir(), "eddie-utils-"));
+    const filepath = join(dir.path, "test.txt");
+    {
+      await using _file = await createDisposableFile(filepath, "temp");
+      assert.equal(await fileExists(filepath), true);
+    }
+    assert.equal(await fileExists(filepath), false);
+  });
+
+  it("ignores errors when file already deleted", async () => {
+    await using dir = await mkdtempDisposable(join(tmpdir(), "eddie-utils-"));
+    const filepath = join(dir.path, "test.txt");
+    const file = await createDisposableFile(filepath, "temp");
+    const { unlink } = await import("node:fs/promises");
+    await unlink(filepath);
+    await file[Symbol.asyncDispose]();
   });
 });
