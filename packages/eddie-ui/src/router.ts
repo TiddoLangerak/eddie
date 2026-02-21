@@ -85,11 +85,12 @@ export function createRouter(ctx: RouteContext): Router {
     }
 
     const distPath = join(distStaticDir, relativePath);
-    if (!(await make(distPath))) {
+    const madePath = await make(distPath);
+    if (madePath == null) {
       sendError(res, "Not found", 404);
       return;
     }
-    await sendFile(res, distPath);
+    await sendFile(res, madePath);
   });
 
   return builder.build();

@@ -12,7 +12,7 @@ export async function compileTs(options: {
     compilerOptions: {
       module: ts.ModuleKind.ESNext,
       target: ts.ScriptTarget.ES2020,
-      noCheck: true,
+      rewriteRelativeImportExtensions: true,
     },
   });
   await mkdir(dirname(dest), { recursive: true });
