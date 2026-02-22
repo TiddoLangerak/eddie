@@ -1,11 +1,11 @@
-import { test } from "node:test";
 import assert from "node:assert/strict";
+import { test } from "node:test";
 import {
-  isRecord,
-  isArray,
-  expectRecord,
   expectArray,
+  expectRecord,
   getProperty,
+  isArray,
+  isRecord,
   setProperty,
   setValue,
 } from "./objects.ts";
@@ -162,12 +162,15 @@ test("setValue", async (t) => {
     );
   });
 
-  await t.test("creates missing intermediate arrays when next key is numeric", () => {
-    const obj: Record<string, unknown> = {};
-    setValue(obj, ["tags", 0], "first");
-    assert.ok(Array.isArray(obj.tags));
-    assert.deepEqual(obj.tags, ["first"]);
-  });
+  await t.test(
+    "creates missing intermediate arrays when next key is numeric",
+    () => {
+      const obj: Record<string, unknown> = {};
+      setValue(obj, ["tags", 0], "first");
+      assert.ok(Array.isArray(obj.tags));
+      assert.deepEqual(obj.tags, ["first"]);
+    },
+  );
 
   await t.test("throws when intermediate is not object or array", () => {
     const obj: Record<string, unknown> = { foo: "string" };
