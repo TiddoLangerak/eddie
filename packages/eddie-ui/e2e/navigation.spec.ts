@@ -775,7 +775,7 @@ test.describe("Backspace behavior", () => {
     await expectFieldText(costNumber, "10EUR");
   });
 
-  test("backspace at start of cost-number merges into commodity and removes cost group", async ({
+  test("backspace at start of cost-number moves cost content to pending", async ({
     page,
   }) => {
     await using _file = await loadTestFileContent(
@@ -787,18 +787,47 @@ test.describe("Backspace behavior", () => {
     );
 
     const row = getPostingRow(page, { directive: 0, posting: 0 });
-    const commodity = getField(row, "amount-commodity");
+    const pending = getPendingField(row);
     const costNumber = getField(row, "cost-number");
     const costCommodity = getField(row, "cost-commodity");
 
     await focusFieldAtStart(costNumber);
     await costNumber.press("Backspace");
 
-    // Cost number merged into commodity, cost fields removed
-    await expectFocused(commodity);
-    await expectFieldText(commodity, "USD10");
+    // Cost content moved to pending, cost fields removed
+    await expectFocused(pending);
+    await expectFieldText(pending, "10 EUR");
     await expect(costNumber).toHaveCount(0);
     await expect(costCommodity).toHaveCount(0);
+  });
+
+  test("backspace then re-trigger restores cost group", async ({ page }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "Test"
+        Assets:Checking  100.00 USD {10 EUR}
+      `,
+    );
+
+    const row = getPostingRow(page, { directive: 0, posting: 0 });
+    const pending = getPendingField(row);
+
+    // Get cost-number and backspace to move content to pending
+    const costNumber = getField(row, "cost-number");
+    await focusFieldAtStart(costNumber);
+    await costNumber.press("Backspace");
+
+    await expectFocused(pending);
+    await expectFieldText(pending, "10 EUR");
+
+    // Re-trigger with { to restore cost group
+    await pending.press("{");
+
+    // Cost group should be restored with original content
+    const newCostNumber = getField(row, "cost-number");
+    await expectFocused(newCostNumber);
+    await expectFieldText(newCostNumber, "10 EUR");
   });
 
   test("backspace at start of narration merges payee into narration", async ({

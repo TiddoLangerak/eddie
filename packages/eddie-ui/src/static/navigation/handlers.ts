@@ -50,6 +50,28 @@ export function handleBackspaceMerge(
     }
   }
 
+  // When at first field of a multi-field group, move entire group content to pending
+  if (isFieldGroup(group) && fieldIndex === 0 && group.fields.length > 1) {
+    const pending = findPendingField(row);
+    if (pending) {
+      e.preventDefault();
+      // Collect all content from group fields
+      const groupContent = group.fields
+        .map((f) => (findFieldElement(row, f.name)?.textContent ?? "").trim())
+        .filter((t) => t.length > 0)
+        .join(" ");
+      // Remove all fields in the group
+      for (const field of group.fields) {
+        findFieldElement(row, field.name)?.remove();
+      }
+      // Move content to pending
+      const pendingText = pending.textContent ?? "";
+      pending.textContent = groupContent + pendingText;
+      focusAtStart(pending);
+      return true;
+    }
+  }
+
   // Find the previous field to merge into
   const prevEl = findPreviousFieldForMerge(
     el,
@@ -65,19 +87,7 @@ export function handleBackspaceMerge(
     const prevText = prevEl.textContent ?? "";
     const insertPos = prevText.length;
     prevEl.textContent = prevText + currentText;
-
-    // When removing first field of a multi-field group, remove all fields in the group
-    if (isFieldGroup(group) && fieldIndex === 0 && group.fields.length > 1) {
-      for (const field of group.fields) {
-        const fieldEl = findFieldElement(row, field.name);
-        if (fieldEl) {
-          fieldEl.remove();
-        }
-      }
-    } else {
-      el.remove();
-    }
-
+    el.remove();
     focusAtPosition(prevEl, insertPos);
     return true;
   }
