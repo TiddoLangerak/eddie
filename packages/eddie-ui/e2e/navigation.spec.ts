@@ -4,6 +4,7 @@ import {
   expectFieldText,
   expectFocused,
   focusFieldAtEnd,
+  focusFieldAtStart,
   getField,
   getFieldStartingWith,
   getPendingField,
@@ -744,8 +745,7 @@ test.describe("Backspace behavior", () => {
     const amountNumber = getField(row, "amount-number");
     const commodity = getField(row, "amount-commodity");
 
-    await commodity.click();
-    await commodity.press("Home");
+    await focusFieldAtStart(commodity);
     await commodity.press("Backspace");
 
     // USD should be merged into amount-number
@@ -768,15 +768,40 @@ test.describe("Backspace behavior", () => {
     const costNumber = getField(row, "cost-number");
     const costCommodity = getField(row, "cost-commodity");
 
-    await costCommodity.click();
-    await costCommodity.press("Home");
+    await focusFieldAtStart(costCommodity);
     await costCommodity.press("Backspace");
 
     await expectFocused(costNumber);
     await expectFieldText(costNumber, "10EUR");
   });
 
-  test("backspace at start of narration merges into payee", async ({
+  test("backspace at start of cost-number merges into commodity and removes cost group", async ({
+    page,
+  }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "Test"
+        Assets:Checking  100.00 USD {10 EUR}
+      `,
+    );
+
+    const row = getPostingRow(page, { directive: 0, posting: 0 });
+    const commodity = getField(row, "amount-commodity");
+    const costNumber = getField(row, "cost-number");
+    const costCommodity = getField(row, "cost-commodity");
+
+    await focusFieldAtStart(costNumber);
+    await costNumber.press("Backspace");
+
+    // Cost number merged into commodity, cost fields removed
+    await expectFocused(commodity);
+    await expectFieldText(commodity, "USD10");
+    await expect(costNumber).toHaveCount(0);
+    await expect(costCommodity).toHaveCount(0);
+  });
+
+  test("backspace at start of narration merges payee into narration", async ({
     page,
   }) => {
     await using _file = await loadTestFileContent(
@@ -791,14 +816,13 @@ test.describe("Backspace behavior", () => {
     const payee = getField(row, "payee");
     const narration = getField(row, "narration");
 
-    await narration.click();
-    await narration.press("Home");
+    await focusFieldAtStart(narration);
     await narration.press("Backspace");
 
-    // Narration merged into payee, narration field removed
-    await expectFocused(payee);
-    await expectFieldText(payee, "The PayeeThe Narration");
-    await expect(narration).toHaveCount(0);
+    // Payee merged into narration, payee field removed (narration is the required field)
+    await expectFocused(narration);
+    await expectFieldText(narration, "The PayeeThe Narration");
+    await expect(payee).toHaveCount(0);
   });
 
   test("backspace at start of link merges text into previous link", async ({
@@ -807,38 +831,23 @@ test.describe("Backspace behavior", () => {
     await using _file = await loadTestFileContent(
       page,
       `
-      2024-01-15 * "Test"
+      2024-01-15 * "Test" ^link-1 ^link-2
         Assets:Checking  100.00 USD
       `,
     );
 
-    const row = getPostingRow(page, { directive: 0, posting: 0 });
-    const pending = getPendingField(row);
-    const commodity = getField(row, "amount-commodity");
+    const row = getRow(page, 0).first();
+    const links = getFieldStartingWith(row, "links");
+    const link1 = links.first();
+    const link2 = links.last();
 
-    await focusFieldAtEnd(commodity);
-    await commodity.press("Space");
-
-    // Create first link
-    await pending.press("^");
-    const link1 = getFieldStartingWith(row, "links").first();
-    await typeInField(link1, "link-1");
-    await link1.press("Space");
-
-    // Create second link
-    await pending.press("^");
-    const link2 = getFieldStartingWith(row, "links").last();
-    await typeInField(link2, "link-2");
-
-    // Move to start and backspace
-    await link2.press("Home");
+    await focusFieldAtStart(link2);
     await link2.press("Backspace");
 
     // link-2 should be merged into link-1
-    const links = getFieldStartingWith(row, "links");
     await expect(links).toHaveCount(1);
-    await expectFieldText(links.first(), "link-1link-2");
-    await expectFocused(links.first());
+    await expectFieldText(link1, "link-1link-2");
+    await expectFocused(link1);
   });
 
   test("backspace at start of tag merges text into previous field", async ({
@@ -847,31 +856,22 @@ test.describe("Backspace behavior", () => {
     await using _file = await loadTestFileContent(
       page,
       `
-      2024-01-15 * "Test"
+      2024-01-15 * "Test" #my-tag
         Assets:Checking  100.00 USD
       `,
     );
 
-    const row = getPostingRow(page, { directive: 0, posting: 0 });
-    const pending = getPendingField(row);
-    const commodity = getField(row, "amount-commodity");
-
-    await focusFieldAtEnd(commodity);
-    await commodity.press("Space");
-
-    // Create a tag
-    await pending.press("#");
+    const row = getRow(page, 0).first();
+    const narration = getField(row, "narration");
     const tag = getFieldStartingWith(row, "tags").first();
-    await typeInField(tag, "my-tag");
 
-    // Move to start and backspace
-    await tag.press("Home");
+    await focusFieldAtStart(tag);
     await tag.press("Backspace");
 
-    // Tag text should be merged into commodity
+    // Tag text should be merged into narration
     const tags = getFieldStartingWith(row, "tags");
     await expect(tags).toHaveCount(0);
-    await expectFieldText(commodity, "USDmy-tag");
+    await expectFieldText(narration, "Testmy-tag");
   });
 });
 

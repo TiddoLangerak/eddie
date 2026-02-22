@@ -29,6 +29,26 @@ export function handleBackspaceMerge(
   fieldIndex: number,
 ): boolean {
   const currentText = (el.textContent ?? "").trim();
+  const currentFieldName = el.dataset.field;
+
+  // Special handling for ambiguous-freetext (payee/narration)
+  // When backspacing from narration into payee, merge into narration (not payee)
+  // because narration is the required field
+  if (group.kind === "ambiguous-freetext") {
+    if (currentFieldName === group.fields.second) {
+      const firstEl = findFieldElement(row, group.fields.first);
+      if (firstEl) {
+        e.preventDefault();
+        const firstText = firstEl.textContent ?? "";
+        const insertPos = firstText.length;
+        // Merge: payee content + narration content → narration
+        el.textContent = firstText + currentText;
+        firstEl.remove();
+        focusAtPosition(el, insertPos);
+        return true;
+      }
+    }
+  }
 
   // Find the previous field to merge into
   const prevEl = findPreviousFieldForMerge(
@@ -45,7 +65,19 @@ export function handleBackspaceMerge(
     const prevText = prevEl.textContent ?? "";
     const insertPos = prevText.length;
     prevEl.textContent = prevText + currentText;
-    el.remove();
+
+    // When removing first field of a multi-field group, remove all fields in the group
+    if (isFieldGroup(group) && fieldIndex === 0 && group.fields.length > 1) {
+      for (const field of group.fields) {
+        const fieldEl = findFieldElement(row, field.name);
+        if (fieldEl) {
+          fieldEl.remove();
+        }
+      }
+    } else {
+      el.remove();
+    }
+
     focusAtPosition(prevEl, insertPos);
     return true;
   }
@@ -79,17 +111,6 @@ function findPreviousFieldForMerge(
       const idx = allInstances.indexOf(currentEl);
       if (idx > 0) {
         return allInstances[idx - 1];
-      }
-    }
-  }
-
-  // For ambiguous-freetext: if in second field, merge into first
-  if (currentGroup.kind === "ambiguous-freetext") {
-    const currentFieldName = currentEl.dataset.field;
-    if (currentFieldName === currentGroup.fields.second) {
-      const firstEl = findFieldElement(row, currentGroup.fields.first);
-      if (firstEl) {
-        return firstEl;
       }
     }
   }
