@@ -1,23 +1,30 @@
 import { expect, test } from "@playwright/test";
-import { expectDefined } from "@tiddo/eddie-utils/objects";
 
 test.describe("cursor utilities", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/");
+  });
+
   test.describe("getTextLength", () => {
     test("returns length of text content", async ({ page }) => {
       await page.setContent(`<span id="el">hello</span>`);
-      const length = await page.evaluate((expectDefined) => {
+      const length = await page.evaluate(async () => {
+        const { expectDefined } = await import("@tiddo/eddie-utils/objects");
+        const { getTextLength } = await import("/static/navigation/cursor.js");
         const el = expectDefined(document.getElementById("el"));
-        return el.textContent?.length ?? 0;
-      }, expectDefined);
+        return getTextLength(el);
+      });
       expect(length).toBe(5);
     });
 
     test("returns 0 for empty element", async ({ page }) => {
       await page.setContent(`<span id="el"></span>`);
-      const length = await page.evaluate((expectDefined) => {
+      const length = await page.evaluate(async () => {
+        const { expectDefined } = await import("@tiddo/eddie-utils/objects");
+        const { getTextLength } = await import("/static/navigation/cursor.js");
         const el = expectDefined(document.getElementById("el"));
-        return el.textContent?.length ?? 0;
-      }, expectDefined);
+        return getTextLength(el);
+      });
       expect(length).toBe(0);
     });
   });
@@ -25,21 +32,23 @@ test.describe("cursor utilities", () => {
   test.describe("isEmpty", () => {
     test("returns true for empty element", async ({ page }) => {
       await page.setContent(`<span id="el" contenteditable="true"></span>`);
-      const result = await page.evaluate((expectDefined) => {
+      const result = await page.evaluate(async () => {
+        const { expectDefined } = await import("@tiddo/eddie-utils/objects");
+        const { isEmpty } = await import("/static/navigation/cursor.js");
         const el = expectDefined(document.getElementById("el"));
-        const text = el.textContent ?? "";
-        return text.trim().length === 0;
-      }, expectDefined);
+        return isEmpty(el);
+      });
       expect(result).toBe(true);
     });
 
     test("returns true for whitespace-only element", async ({ page }) => {
       await page.setContent(`<span id="el" contenteditable="true">   </span>`);
-      const result = await page.evaluate((expectDefined) => {
+      const result = await page.evaluate(async () => {
+        const { expectDefined } = await import("@tiddo/eddie-utils/objects");
+        const { isEmpty } = await import("/static/navigation/cursor.js");
         const el = expectDefined(document.getElementById("el"));
-        const text = el.textContent ?? "";
-        return text.trim().length === 0;
-      }, expectDefined);
+        return isEmpty(el);
+      });
       expect(result).toBe(true);
     });
 
@@ -47,11 +56,12 @@ test.describe("cursor utilities", () => {
       await page.setContent(
         `<span id="el" contenteditable="true">hello</span>`,
       );
-      const result = await page.evaluate((expectDefined) => {
+      const result = await page.evaluate(async () => {
+        const { expectDefined } = await import("@tiddo/eddie-utils/objects");
+        const { isEmpty } = await import("/static/navigation/cursor.js");
         const el = expectDefined(document.getElementById("el"));
-        const text = el.textContent ?? "";
-        return text.trim().length === 0;
-      }, expectDefined);
+        return isEmpty(el);
+      });
       expect(result).toBe(false);
     });
   });
@@ -61,23 +71,15 @@ test.describe("cursor utilities", () => {
       await page.setContent(
         `<span id="el" contenteditable="true">hello</span>`,
       );
-      const position = await page.evaluate((expectDefined) => {
+      const position = await page.evaluate(async () => {
+        const { expectDefined } = await import("@tiddo/eddie-utils/objects");
+        const { focusAtStart, getCaretPosition } = await import(
+          "/static/navigation/cursor.js"
+        );
         const el = expectDefined(document.getElementById("el"));
-        el.focus();
-        const range = document.createRange();
-        range.selectNodeContents(el);
-        range.collapse(true);
-        const selection = expectDefined(window.getSelection());
-        selection.removeAllRanges();
-        selection.addRange(range);
-
-        const sel = expectDefined(window.getSelection());
-        const r = sel.getRangeAt(0);
-        const preCaretRange = r.cloneRange();
-        preCaretRange.selectNodeContents(el);
-        preCaretRange.setEnd(r.startContainer, r.startOffset);
-        return preCaretRange.toString().length;
-      }, expectDefined);
+        focusAtStart(el);
+        return getCaretPosition(el);
+      });
       expect(position).toBe(0);
     });
   });
@@ -87,23 +89,15 @@ test.describe("cursor utilities", () => {
       await page.setContent(
         `<span id="el" contenteditable="true">hello</span>`,
       );
-      const position = await page.evaluate((expectDefined) => {
+      const position = await page.evaluate(async () => {
+        const { expectDefined } = await import("@tiddo/eddie-utils/objects");
+        const { focusAtEnd, getCaretPosition } = await import(
+          "/static/navigation/cursor.js"
+        );
         const el = expectDefined(document.getElementById("el"));
-        el.focus();
-        const range = document.createRange();
-        range.selectNodeContents(el);
-        range.collapse(false);
-        const selection = expectDefined(window.getSelection());
-        selection.removeAllRanges();
-        selection.addRange(range);
-
-        const sel = expectDefined(window.getSelection());
-        const r = sel.getRangeAt(0);
-        const preCaretRange = r.cloneRange();
-        preCaretRange.selectNodeContents(el);
-        preCaretRange.setEnd(r.startContainer, r.startOffset);
-        return preCaretRange.toString().length;
-      }, expectDefined);
+        focusAtEnd(el);
+        return getCaretPosition(el);
+      });
       expect(position).toBe(5);
     });
   });
@@ -113,25 +107,15 @@ test.describe("cursor utilities", () => {
       await page.setContent(
         `<span id="el" contenteditable="true">hello</span>`,
       );
-      const result = await page.evaluate((expectDefined) => {
+      const result = await page.evaluate(async () => {
+        const { expectDefined } = await import("@tiddo/eddie-utils/objects");
+        const { focusAtEnd, isAtEnd } = await import(
+          "/static/navigation/cursor.js"
+        );
         const el = expectDefined(document.getElementById("el"));
-        el.focus();
-        const range = document.createRange();
-        range.selectNodeContents(el);
-        range.collapse(false);
-        const selection = expectDefined(window.getSelection());
-        selection.removeAllRanges();
-        selection.addRange(range);
-
-        const sel = expectDefined(window.getSelection());
-        const r = sel.getRangeAt(0);
-        const preCaretRange = r.cloneRange();
-        preCaretRange.selectNodeContents(el);
-        preCaretRange.setEnd(r.startContainer, r.startOffset);
-        const caretPos = preCaretRange.toString().length;
-        const textLen = el.textContent?.length ?? 0;
-        return caretPos >= textLen;
-      }, expectDefined);
+        focusAtEnd(el);
+        return isAtEnd(el);
+      });
       expect(result).toBe(true);
     });
 
@@ -139,25 +123,15 @@ test.describe("cursor utilities", () => {
       await page.setContent(
         `<span id="el" contenteditable="true">hello</span>`,
       );
-      const result = await page.evaluate((expectDefined) => {
+      const result = await page.evaluate(async () => {
+        const { expectDefined } = await import("@tiddo/eddie-utils/objects");
+        const { focusAtStart, isAtEnd } = await import(
+          "/static/navigation/cursor.js"
+        );
         const el = expectDefined(document.getElementById("el"));
-        el.focus();
-        const range = document.createRange();
-        range.selectNodeContents(el);
-        range.collapse(true);
-        const selection = expectDefined(window.getSelection());
-        selection.removeAllRanges();
-        selection.addRange(range);
-
-        const sel = expectDefined(window.getSelection());
-        const r = sel.getRangeAt(0);
-        const preCaretRange = r.cloneRange();
-        preCaretRange.selectNodeContents(el);
-        preCaretRange.setEnd(r.startContainer, r.startOffset);
-        const caretPos = preCaretRange.toString().length;
-        const textLen = el.textContent?.length ?? 0;
-        return caretPos >= textLen;
-      }, expectDefined);
+        focusAtStart(el);
+        return isAtEnd(el);
+      });
       expect(result).toBe(false);
     });
   });
@@ -167,23 +141,15 @@ test.describe("cursor utilities", () => {
       await page.setContent(
         `<span id="el" contenteditable="true">hello</span>`,
       );
-      const result = await page.evaluate((expectDefined) => {
+      const result = await page.evaluate(async () => {
+        const { expectDefined } = await import("@tiddo/eddie-utils/objects");
+        const { focusAtStart, isAtStart } = await import(
+          "/static/navigation/cursor.js"
+        );
         const el = expectDefined(document.getElementById("el"));
-        el.focus();
-        const range = document.createRange();
-        range.selectNodeContents(el);
-        range.collapse(true);
-        const selection = expectDefined(window.getSelection());
-        selection.removeAllRanges();
-        selection.addRange(range);
-
-        const sel = expectDefined(window.getSelection());
-        const r = sel.getRangeAt(0);
-        const preCaretRange = r.cloneRange();
-        preCaretRange.selectNodeContents(el);
-        preCaretRange.setEnd(r.startContainer, r.startOffset);
-        return preCaretRange.toString().length === 0;
-      }, expectDefined);
+        focusAtStart(el);
+        return isAtStart(el);
+      });
       expect(result).toBe(true);
     });
 
@@ -191,23 +157,15 @@ test.describe("cursor utilities", () => {
       await page.setContent(
         `<span id="el" contenteditable="true">hello</span>`,
       );
-      const result = await page.evaluate((expectDefined) => {
+      const result = await page.evaluate(async () => {
+        const { expectDefined } = await import("@tiddo/eddie-utils/objects");
+        const { focusAtEnd, isAtStart } = await import(
+          "/static/navigation/cursor.js"
+        );
         const el = expectDefined(document.getElementById("el"));
-        el.focus();
-        const range = document.createRange();
-        range.selectNodeContents(el);
-        range.collapse(false);
-        const selection = expectDefined(window.getSelection());
-        selection.removeAllRanges();
-        selection.addRange(range);
-
-        const sel = expectDefined(window.getSelection());
-        const r = sel.getRangeAt(0);
-        const preCaretRange = r.cloneRange();
-        preCaretRange.selectNodeContents(el);
-        preCaretRange.setEnd(r.startContainer, r.startOffset);
-        return preCaretRange.toString().length === 0;
-      }, expectDefined);
+        focusAtEnd(el);
+        return isAtStart(el);
+      });
       expect(result).toBe(false);
     });
   });
