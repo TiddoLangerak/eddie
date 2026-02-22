@@ -26,7 +26,7 @@ import {
   moveToNextField,
   moveToPrevField,
 } from "./handlers.ts";
-import { handlePendingField, type NavigationCallbacks } from "./pending.ts";
+import { type NavigationCallbacks, handlePendingField } from "./pending.ts";
 import { findCurrentFieldInSchema, isFieldGroup } from "./schema.ts";
 
 export type { NavigationCallbacks } from "./pending.ts";

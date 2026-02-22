@@ -14,7 +14,10 @@ export function isFieldGroup(group: GroupSpec): group is FieldGroup {
   return group.kind === "field-group";
 }
 
-export function fieldNameMatches(schemaName: string, actualName: string): boolean {
+export function fieldNameMatches(
+  schemaName: string,
+  actualName: string,
+): boolean {
   if (schemaName === actualName) return true;
   const repeatPattern = new RegExp(`^${schemaName}-\\d+$`);
   return repeatPattern.test(actualName);

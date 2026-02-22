@@ -1,11 +1,11 @@
+import { randomUUID } from "node:crypto";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { Locator, Page } from "@playwright/test";
 import { expect } from "@playwright/test";
-import { join, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
-import { randomUUID } from "node:crypto";
-import { trimIndent } from "@tiddo/eddie-utils/strings";
-import { createDisposableFile } from "@tiddo/eddie-utils/files";
 import { disposeOnException } from "@tiddo/eddie-utils/async";
+import { createDisposableFile } from "@tiddo/eddie-utils/files";
+import { trimIndent } from "@tiddo/eddie-utils/strings";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const workspaceDir = join(__dirname, ".workspace");
@@ -56,10 +56,7 @@ export function getField(row: Locator, fieldName: string): Locator {
   return row.locator(`[data-field="${fieldName}"][contenteditable="true"]`);
 }
 
-export function getFieldStartingWith(
-  row: Locator,
-  prefix: string,
-): Locator {
+export function getFieldStartingWith(row: Locator, prefix: string): Locator {
   return row.locator(`[data-field^="${prefix}"][contenteditable="true"]`);
 }
 

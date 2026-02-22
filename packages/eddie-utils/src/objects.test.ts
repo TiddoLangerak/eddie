@@ -1,14 +1,39 @@
-import { test } from "node:test";
 import assert from "node:assert/strict";
+import { test } from "node:test";
 import {
-  isRecord,
-  isArray,
-  expectRecord,
   expectArray,
+  expectDefined,
+  expectRecord,
   getProperty,
+  isArray,
+  isRecord,
   setProperty,
   setValue,
 } from "./objects.ts";
+
+test("expect", async (t) => {
+  await t.test("returns value when defined", () => {
+    assert.equal(expectDefined("hello"), "hello");
+    assert.equal(expectDefined(0), 0);
+    assert.equal(expectDefined(false), false);
+    assert.equal(expectDefined(""), "");
+  });
+
+  await t.test("throws when null", () => {
+    assert.throws(() => expectDefined(null), /Expected value to be defined/);
+  });
+
+  await t.test("throws when undefined", () => {
+    assert.throws(
+      () => expectDefined(undefined),
+      /Expected value to be defined/,
+    );
+  });
+
+  await t.test("uses custom message when provided", () => {
+    assert.throws(() => expectDefined(null, "Custom error"), /Custom error/);
+  });
+});
 
 test("isRecord", async (t) => {
   await t.test("returns true for plain object", () => {
@@ -162,12 +187,15 @@ test("setValue", async (t) => {
     );
   });
 
-  await t.test("creates missing intermediate arrays when next key is numeric", () => {
-    const obj: Record<string, unknown> = {};
-    setValue(obj, ["tags", 0], "first");
-    assert.ok(Array.isArray(obj.tags));
-    assert.deepEqual(obj.tags, ["first"]);
-  });
+  await t.test(
+    "creates missing intermediate arrays when next key is numeric",
+    () => {
+      const obj: Record<string, unknown> = {};
+      setValue(obj, ["tags", 0], "first");
+      assert.ok(Array.isArray(obj.tags));
+      assert.deepEqual(obj.tags, ["first"]);
+    },
+  );
 
   await t.test("throws when intermediate is not object or array", () => {
     const obj: Record<string, unknown> = { foo: "string" };

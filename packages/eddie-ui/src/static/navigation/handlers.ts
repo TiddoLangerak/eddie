@@ -4,7 +4,11 @@
 
 import type { FieldGroup, GroupSpec, RowSchema } from "../fieldSchema.ts";
 import { focusAtEnd, focusAtStart, isAtEnd, isEmpty } from "./cursor.ts";
-import { findFieldElement, findLastRepeatableFieldElement, trimField } from "./dom.ts";
+import {
+  findFieldElement,
+  findLastRepeatableFieldElement,
+  trimField,
+} from "./dom.ts";
 import { moveToPending } from "./pending.ts";
 import {
   findNextFieldInGroup,
@@ -108,7 +112,10 @@ export function handleFreetextFieldExit(
   return true;
 }
 
-export function hasValidNextGroup(schema: RowSchema, fromIndex: number): boolean {
+export function hasValidNextGroup(
+  schema: RowSchema,
+  fromIndex: number,
+): boolean {
   for (let i = fromIndex + 1; i < schema.groups.length; i++) {
     const group = schema.groups[i];
     // A group is "valid" if it's not optional or has a trigger

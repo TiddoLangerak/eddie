@@ -1,11 +1,12 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import { expectDefined } from "@tiddo/eddie-utils/objects";
 
 test.describe("cursor utilities", () => {
   test.describe("getTextLength", () => {
     test("returns length of text content", async ({ page }) => {
       await page.setContent(`<span id="el">hello</span>`);
       const length = await page.evaluate(() => {
-        const el = document.getElementById("el")!;
+        const el = expectDefined(document.getElementById("el"));
         return el.textContent?.length ?? 0;
       });
       expect(length).toBe(5);
@@ -14,7 +15,7 @@ test.describe("cursor utilities", () => {
     test("returns 0 for empty element", async ({ page }) => {
       await page.setContent(`<span id="el"></span>`);
       const length = await page.evaluate(() => {
-        const el = document.getElementById("el")!;
+        const el = expectDefined(document.getElementById("el"));
         return el.textContent?.length ?? 0;
       });
       expect(length).toBe(0);
@@ -25,7 +26,7 @@ test.describe("cursor utilities", () => {
     test("returns true for empty element", async ({ page }) => {
       await page.setContent(`<span id="el" contenteditable="true"></span>`);
       const result = await page.evaluate(() => {
-        const el = document.getElementById("el")!;
+        const el = expectDefined(document.getElementById("el"));
         const text = el.textContent ?? "";
         return text.trim().length === 0;
       });
@@ -35,7 +36,7 @@ test.describe("cursor utilities", () => {
     test("returns true for whitespace-only element", async ({ page }) => {
       await page.setContent(`<span id="el" contenteditable="true">   </span>`);
       const result = await page.evaluate(() => {
-        const el = document.getElementById("el")!;
+        const el = expectDefined(document.getElementById("el"));
         const text = el.textContent ?? "";
         return text.trim().length === 0;
       });
@@ -47,7 +48,7 @@ test.describe("cursor utilities", () => {
         `<span id="el" contenteditable="true">hello</span>`,
       );
       const result = await page.evaluate(() => {
-        const el = document.getElementById("el")!;
+        const el = expectDefined(document.getElementById("el"));
         const text = el.textContent ?? "";
         return text.trim().length === 0;
       });
@@ -61,17 +62,16 @@ test.describe("cursor utilities", () => {
         `<span id="el" contenteditable="true">hello</span>`,
       );
       const position = await page.evaluate(() => {
-        const el = document.getElementById("el")!;
+        const el = expectDefined(document.getElementById("el"));
         el.focus();
         const range = document.createRange();
         range.selectNodeContents(el);
         range.collapse(true);
-        const selection = window.getSelection()!;
+        const selection = expectDefined(window.getSelection());
         selection.removeAllRanges();
         selection.addRange(range);
 
-        // Get caret position
-        const sel = window.getSelection()!;
+        const sel = expectDefined(window.getSelection());
         const r = sel.getRangeAt(0);
         const preCaretRange = r.cloneRange();
         preCaretRange.selectNodeContents(el);
@@ -88,17 +88,16 @@ test.describe("cursor utilities", () => {
         `<span id="el" contenteditable="true">hello</span>`,
       );
       const position = await page.evaluate(() => {
-        const el = document.getElementById("el")!;
+        const el = expectDefined(document.getElementById("el"));
         el.focus();
         const range = document.createRange();
         range.selectNodeContents(el);
         range.collapse(false);
-        const selection = window.getSelection()!;
+        const selection = expectDefined(window.getSelection());
         selection.removeAllRanges();
         selection.addRange(range);
 
-        // Get caret position
-        const sel = window.getSelection()!;
+        const sel = expectDefined(window.getSelection());
         const r = sel.getRangeAt(0);
         const preCaretRange = r.cloneRange();
         preCaretRange.selectNodeContents(el);
@@ -115,16 +114,16 @@ test.describe("cursor utilities", () => {
         `<span id="el" contenteditable="true">hello</span>`,
       );
       const result = await page.evaluate(() => {
-        const el = document.getElementById("el")!;
+        const el = expectDefined(document.getElementById("el"));
         el.focus();
         const range = document.createRange();
         range.selectNodeContents(el);
         range.collapse(false);
-        const selection = window.getSelection()!;
+        const selection = expectDefined(window.getSelection());
         selection.removeAllRanges();
         selection.addRange(range);
 
-        const sel = window.getSelection()!;
+        const sel = expectDefined(window.getSelection());
         const r = sel.getRangeAt(0);
         const preCaretRange = r.cloneRange();
         preCaretRange.selectNodeContents(el);
@@ -141,16 +140,16 @@ test.describe("cursor utilities", () => {
         `<span id="el" contenteditable="true">hello</span>`,
       );
       const result = await page.evaluate(() => {
-        const el = document.getElementById("el")!;
+        const el = expectDefined(document.getElementById("el"));
         el.focus();
         const range = document.createRange();
         range.selectNodeContents(el);
         range.collapse(true);
-        const selection = window.getSelection()!;
+        const selection = expectDefined(window.getSelection());
         selection.removeAllRanges();
         selection.addRange(range);
 
-        const sel = window.getSelection()!;
+        const sel = expectDefined(window.getSelection());
         const r = sel.getRangeAt(0);
         const preCaretRange = r.cloneRange();
         preCaretRange.selectNodeContents(el);
@@ -169,16 +168,16 @@ test.describe("cursor utilities", () => {
         `<span id="el" contenteditable="true">hello</span>`,
       );
       const result = await page.evaluate(() => {
-        const el = document.getElementById("el")!;
+        const el = expectDefined(document.getElementById("el"));
         el.focus();
         const range = document.createRange();
         range.selectNodeContents(el);
         range.collapse(true);
-        const selection = window.getSelection()!;
+        const selection = expectDefined(window.getSelection());
         selection.removeAllRanges();
         selection.addRange(range);
 
-        const sel = window.getSelection()!;
+        const sel = expectDefined(window.getSelection());
         const r = sel.getRangeAt(0);
         const preCaretRange = r.cloneRange();
         preCaretRange.selectNodeContents(el);
@@ -193,16 +192,16 @@ test.describe("cursor utilities", () => {
         `<span id="el" contenteditable="true">hello</span>`,
       );
       const result = await page.evaluate(() => {
-        const el = document.getElementById("el")!;
+        const el = expectDefined(document.getElementById("el"));
         el.focus();
         const range = document.createRange();
         range.selectNodeContents(el);
         range.collapse(false);
-        const selection = window.getSelection()!;
+        const selection = expectDefined(window.getSelection());
         selection.removeAllRanges();
         selection.addRange(range);
 
-        const sel = window.getSelection()!;
+        const sel = expectDefined(window.getSelection());
         const r = sel.getRangeAt(0);
         const preCaretRange = r.cloneRange();
         preCaretRange.selectNodeContents(el);

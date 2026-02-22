@@ -1,4 +1,5 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import { expectDefined } from "@tiddo/eddie-utils/objects";
 
 test.describe("DOM utilities", () => {
   test.describe("findFieldElement", () => {
@@ -10,7 +11,7 @@ test.describe("DOM utilities", () => {
         </div>
       `);
       const fieldName = await page.evaluate(() => {
-        const container = document.getElementById("container")!;
+        const container = expectDefined(document.getElementById("container"));
         const el = container.querySelector<HTMLElement>(
           '[data-field="amount"][contenteditable="true"]',
         );
@@ -26,7 +27,7 @@ test.describe("DOM utilities", () => {
         </div>
       `);
       const result = await page.evaluate(() => {
-        const container = document.getElementById("container")!;
+        const container = expectDefined(document.getElementById("container"));
         return container.querySelector<HTMLElement>(
           '[data-field="nonexistent"][contenteditable="true"]',
         );
@@ -42,7 +43,7 @@ test.describe("DOM utilities", () => {
         </div>
       `);
       const text = await page.evaluate(() => {
-        const container = document.getElementById("container")!;
+        const container = expectDefined(document.getElementById("container"));
         const el = container.querySelector<HTMLElement>(
           '[data-field="amount"][contenteditable="true"]',
         );
@@ -62,7 +63,7 @@ test.describe("DOM utilities", () => {
         </div>
       `);
       const text = await page.evaluate(() => {
-        const container = document.getElementById("container")!;
+        const container = expectDefined(document.getElementById("container"));
         const pattern = /^tags(-\d+)?$/;
         const allFields = container.querySelectorAll<HTMLElement>(
           '[data-field][contenteditable="true"]',
@@ -88,7 +89,7 @@ test.describe("DOM utilities", () => {
         </div>
       `);
       const text = await page.evaluate(() => {
-        const container = document.getElementById("container")!;
+        const container = expectDefined(document.getElementById("container"));
         const pattern = /^tags(-\d+)?$/;
         const allFields = container.querySelectorAll<HTMLElement>(
           '[data-field][contenteditable="true"]',
@@ -112,7 +113,7 @@ test.describe("DOM utilities", () => {
         </div>
       `);
       const result = await page.evaluate(() => {
-        const container = document.getElementById("container")!;
+        const container = expectDefined(document.getElementById("container"));
         const pattern = /^tags(-\d+)?$/;
         const allFields = container.querySelectorAll<HTMLElement>(
           '[data-field][contenteditable="true"]',
@@ -139,7 +140,7 @@ test.describe("DOM utilities", () => {
         </div>
       `);
       const exists = await page.evaluate(() => {
-        const row = document.getElementById("row")!;
+        const row = expectDefined(document.getElementById("row"));
         const pending = row.querySelector<HTMLElement>(
           '[data-field="pending"][contenteditable="true"]',
         );
@@ -155,7 +156,7 @@ test.describe("DOM utilities", () => {
         <table><tbody><tr id="row" data-row-type="posting"></tr></tbody></table>
       `);
       const rowType = await page.evaluate(() => {
-        const row = document.getElementById("row")!;
+        const row = expectDefined(document.getElementById("row"));
         return row.dataset.rowType ?? null;
       });
       expect(rowType).toBe("posting");
@@ -166,7 +167,7 @@ test.describe("DOM utilities", () => {
         <table><tbody><tr id="row"></tr></tbody></table>
       `);
       const rowType = await page.evaluate(() => {
-        const row = document.getElementById("row")!;
+        const row = expectDefined(document.getElementById("row"));
         return row.dataset.rowType ?? null;
       });
       expect(rowType).toBeNull();
@@ -179,7 +180,7 @@ test.describe("DOM utilities", () => {
         `<span id="el" contenteditable="true">  hello</span>`,
       );
       const result = await page.evaluate(() => {
-        const el = document.getElementById("el")!;
+        const el = expectDefined(document.getElementById("el"));
         const text = el.textContent ?? "";
         const trimmed = text.trim();
         if (text !== trimmed) {
@@ -195,7 +196,7 @@ test.describe("DOM utilities", () => {
         `<span id="el" contenteditable="true">hello  </span>`,
       );
       const result = await page.evaluate(() => {
-        const el = document.getElementById("el")!;
+        const el = expectDefined(document.getElementById("el"));
         const text = el.textContent ?? "";
         const trimmed = text.trim();
         if (text !== trimmed) {
@@ -211,7 +212,7 @@ test.describe("DOM utilities", () => {
         `<span id="el" contenteditable="true">hello</span>`,
       );
       const result = await page.evaluate(() => {
-        const el = document.getElementById("el")!;
+        const el = expectDefined(document.getElementById("el"));
         const text = el.textContent ?? "";
         const trimmed = text.trim();
         if (text !== trimmed) {
@@ -230,7 +231,8 @@ test.describe("DOM utilities", () => {
         const span = document.createElement("span");
         span.setAttribute("contenteditable", "true");
         span.setAttribute("data-field", "test-field");
-        document.getElementById("container")!.appendChild(span);
+        const container = expectDefined(document.getElementById("container"));
+        container.appendChild(span);
         return {
           tagName: span.tagName,
           contenteditable: span.getAttribute("contenteditable"),
@@ -251,7 +253,7 @@ test.describe("DOM utilities", () => {
         </div>
       `);
       const result = await page.evaluate(() => {
-        const row = document.getElementById("row")!;
+        const row = expectDefined(document.getElementById("row"));
         const baseName = "tags";
         let index = 1;
         while (
@@ -272,7 +274,7 @@ test.describe("DOM utilities", () => {
         </div>
       `);
       const result = await page.evaluate(() => {
-        const row = document.getElementById("row")!;
+        const row = expectDefined(document.getElementById("row"));
         const baseName = "tags";
         let index = 1;
         while (
@@ -293,7 +295,7 @@ test.describe("DOM utilities", () => {
         </div>
       `);
       const result = await page.evaluate(() => {
-        const row = document.getElementById("row")!;
+        const row = expectDefined(document.getElementById("row"));
         const baseName = "tags";
         let index = 1;
         while (

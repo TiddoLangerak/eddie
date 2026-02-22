@@ -52,7 +52,10 @@ export function createEditableSpan(fieldName: string): HTMLElement {
   return span;
 }
 
-export function generateNextIndexedFieldName(row: Element, baseName: string): string {
+export function generateNextIndexedFieldName(
+  row: Element,
+  baseName: string,
+): string {
   let index = 1;
   while (findFieldElement(row, `${baseName}-${index}`)) {
     index++;

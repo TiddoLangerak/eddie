@@ -3,7 +3,7 @@
  */
 
 import type { FieldGroup, GroupSpec, RowSchema } from "../fieldSchema.ts";
-import { focusAtEnd, focusAtStart, isEmpty, isAtStart } from "./cursor.ts";
+import { focusAtEnd, focusAtStart, isAtStart, isEmpty } from "./cursor.ts";
 import {
   createEditableSpan,
   findFieldElement,
