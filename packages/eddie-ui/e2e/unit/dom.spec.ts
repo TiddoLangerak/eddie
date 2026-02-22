@@ -10,13 +10,13 @@ test.describe("DOM utilities", () => {
           <span data-field="amount" contenteditable="true">100</span>
         </div>
       `);
-      const fieldName = await page.evaluate(() => {
+      const fieldName = await page.evaluate((expectDefined) => {
         const container = expectDefined(document.getElementById("container"));
         const el = container.querySelector<HTMLElement>(
           '[data-field="amount"][contenteditable="true"]',
         );
         return el?.dataset.field;
-      });
+      }, expectDefined);
       expect(fieldName).toBe("amount");
     });
 
@@ -26,12 +26,12 @@ test.describe("DOM utilities", () => {
           <span data-field="account" contenteditable="true">Assets</span>
         </div>
       `);
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate((expectDefined) => {
         const container = expectDefined(document.getElementById("container"));
         return container.querySelector<HTMLElement>(
           '[data-field="nonexistent"][contenteditable="true"]',
         );
-      });
+      }, expectDefined);
       expect(result).toBeNull();
     });
 
@@ -42,13 +42,13 @@ test.describe("DOM utilities", () => {
           <span data-field="amount" contenteditable="true">editable</span>
         </div>
       `);
-      const text = await page.evaluate(() => {
+      const text = await page.evaluate((expectDefined) => {
         const container = expectDefined(document.getElementById("container"));
         const el = container.querySelector<HTMLElement>(
           '[data-field="amount"][contenteditable="true"]',
         );
         return el?.textContent;
-      });
+      }, expectDefined);
       expect(text).toBe("editable");
     });
   });
@@ -62,7 +62,7 @@ test.describe("DOM utilities", () => {
           <span data-field="tags-2" contenteditable="true">third</span>
         </div>
       `);
-      const text = await page.evaluate(() => {
+      const text = await page.evaluate((expectDefined) => {
         const container = expectDefined(document.getElementById("container"));
         const pattern = /^tags(-\d+)?$/;
         const allFields = container.querySelectorAll<HTMLElement>(
@@ -76,7 +76,7 @@ test.describe("DOM utilities", () => {
           }
         }
         return lastMatch?.textContent;
-      });
+      }, expectDefined);
       expect(text).toBe("third");
     });
 
@@ -88,7 +88,7 @@ test.describe("DOM utilities", () => {
           <span data-field="tags" contenteditable="true">only</span>
         </div>
       `);
-      const text = await page.evaluate(() => {
+      const text = await page.evaluate((expectDefined) => {
         const container = expectDefined(document.getElementById("container"));
         const pattern = /^tags(-\d+)?$/;
         const allFields = container.querySelectorAll<HTMLElement>(
@@ -102,7 +102,7 @@ test.describe("DOM utilities", () => {
           }
         }
         return lastMatch?.textContent;
-      });
+      }, expectDefined);
       expect(text).toBe("only");
     });
 
@@ -112,7 +112,7 @@ test.describe("DOM utilities", () => {
           <span data-field="links-0" contenteditable="true">different</span>
         </div>
       `);
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate((expectDefined) => {
         const container = expectDefined(document.getElementById("container"));
         const pattern = /^tags(-\d+)?$/;
         const allFields = container.querySelectorAll<HTMLElement>(
@@ -126,7 +126,7 @@ test.describe("DOM utilities", () => {
           }
         }
         return lastMatch;
-      });
+      }, expectDefined);
       expect(result).toBeNull();
     });
   });
@@ -139,13 +139,13 @@ test.describe("DOM utilities", () => {
           <span data-field="pending" contenteditable="true"></span>
         </div>
       `);
-      const exists = await page.evaluate(() => {
+      const exists = await page.evaluate((expectDefined) => {
         const row = expectDefined(document.getElementById("row"));
         const pending = row.querySelector<HTMLElement>(
           '[data-field="pending"][contenteditable="true"]',
         );
         return pending !== null;
-      });
+      }, expectDefined);
       expect(exists).toBe(true);
     });
   });
@@ -155,10 +155,10 @@ test.describe("DOM utilities", () => {
       await page.setContent(`
         <table><tbody><tr id="row" data-row-type="posting"></tr></tbody></table>
       `);
-      const rowType = await page.evaluate(() => {
+      const rowType = await page.evaluate((expectDefined) => {
         const row = expectDefined(document.getElementById("row"));
         return row.dataset.rowType ?? null;
-      });
+      }, expectDefined);
       expect(rowType).toBe("posting");
     });
 
@@ -166,10 +166,10 @@ test.describe("DOM utilities", () => {
       await page.setContent(`
         <table><tbody><tr id="row"></tr></tbody></table>
       `);
-      const rowType = await page.evaluate(() => {
+      const rowType = await page.evaluate((expectDefined) => {
         const row = expectDefined(document.getElementById("row"));
         return row.dataset.rowType ?? null;
-      });
+      }, expectDefined);
       expect(rowType).toBeNull();
     });
   });
@@ -179,7 +179,7 @@ test.describe("DOM utilities", () => {
       await page.setContent(
         `<span id="el" contenteditable="true">  hello</span>`,
       );
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate((expectDefined) => {
         const el = expectDefined(document.getElementById("el"));
         const text = el.textContent ?? "";
         const trimmed = text.trim();
@@ -187,7 +187,7 @@ test.describe("DOM utilities", () => {
           el.textContent = trimmed;
         }
         return el.textContent;
-      });
+      }, expectDefined);
       expect(result).toBe("hello");
     });
 
@@ -195,7 +195,7 @@ test.describe("DOM utilities", () => {
       await page.setContent(
         `<span id="el" contenteditable="true">hello  </span>`,
       );
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate((expectDefined) => {
         const el = expectDefined(document.getElementById("el"));
         const text = el.textContent ?? "";
         const trimmed = text.trim();
@@ -203,7 +203,7 @@ test.describe("DOM utilities", () => {
           el.textContent = trimmed;
         }
         return el.textContent;
-      });
+      }, expectDefined);
       expect(result).toBe("hello");
     });
 
@@ -211,7 +211,7 @@ test.describe("DOM utilities", () => {
       await page.setContent(
         `<span id="el" contenteditable="true">hello</span>`,
       );
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate((expectDefined) => {
         const el = expectDefined(document.getElementById("el"));
         const text = el.textContent ?? "";
         const trimmed = text.trim();
@@ -219,7 +219,7 @@ test.describe("DOM utilities", () => {
           el.textContent = trimmed;
         }
         return el.textContent;
-      });
+      }, expectDefined);
       expect(result).toBe("hello");
     });
   });
@@ -227,7 +227,7 @@ test.describe("DOM utilities", () => {
   test.describe("createEditableSpan", () => {
     test("creates span with correct attributes", async ({ page }) => {
       await page.setContent(`<div id="container"></div>`);
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate((expectDefined) => {
         const span = document.createElement("span");
         span.setAttribute("contenteditable", "true");
         span.setAttribute("data-field", "test-field");
@@ -238,7 +238,7 @@ test.describe("DOM utilities", () => {
           contenteditable: span.getAttribute("contenteditable"),
           dataField: span.getAttribute("data-field"),
         };
-      });
+      }, expectDefined);
       expect(result.tagName).toBe("SPAN");
       expect(result.contenteditable).toBe("true");
       expect(result.dataField).toBe("test-field");
@@ -252,7 +252,7 @@ test.describe("DOM utilities", () => {
           <span data-field="other" contenteditable="true"></span>
         </div>
       `);
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate((expectDefined) => {
         const row = expectDefined(document.getElementById("row"));
         const baseName = "tags";
         let index = 1;
@@ -262,7 +262,7 @@ test.describe("DOM utilities", () => {
           index++;
         }
         return `${baseName}-${index}`;
-      });
+      }, expectDefined);
       expect(result).toBe("tags-1");
     });
 
@@ -273,7 +273,7 @@ test.describe("DOM utilities", () => {
           <span data-field="tags-2" contenteditable="true"></span>
         </div>
       `);
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate((expectDefined) => {
         const row = expectDefined(document.getElementById("row"));
         const baseName = "tags";
         let index = 1;
@@ -283,7 +283,7 @@ test.describe("DOM utilities", () => {
           index++;
         }
         return `${baseName}-${index}`;
-      });
+      }, expectDefined);
       expect(result).toBe("tags-3");
     });
 
@@ -294,7 +294,7 @@ test.describe("DOM utilities", () => {
           <span data-field="tags-3" contenteditable="true"></span>
         </div>
       `);
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate((expectDefined) => {
         const row = expectDefined(document.getElementById("row"));
         const baseName = "tags";
         let index = 1;
@@ -304,7 +304,7 @@ test.describe("DOM utilities", () => {
           index++;
         }
         return `${baseName}-${index}`;
-      });
+      }, expectDefined);
       expect(result).toBe("tags-1");
     });
   });
