@@ -3,7 +3,7 @@
  */
 
 import type { FieldGroup, GroupSpec, RowSchema } from "../fieldSchema.ts";
-import { focusAtEnd, focusAtStart, isEmpty, isAtStart } from "./cursor.ts";
+import { focusAtEnd, focusAtStart, isAtStart, isEmpty } from "./cursor.ts";
 import {
   createEditableSpan,
   findFieldElement,
@@ -204,7 +204,9 @@ export function handlePendingField(
   const found = findGroupByPrefix(schema, key);
   if (found) {
     e.preventDefault();
-    trimField(el);
+    // Capture pending text before clearing (for prepend behavior)
+    const pendingText = (el.textContent ?? "").trim();
+    el.textContent = "";
 
     const { group: targetGroup, groupIndex: targetGroupIndex } = found;
     const firstFieldName = getFirstFieldOfGroup(targetGroup);
@@ -220,7 +222,8 @@ export function handlePendingField(
           row,
         );
         if (newEl) {
-          focusAtStart(newEl);
+          newEl.textContent = pendingText;
+          focusAtEnd(newEl);
         }
         return;
       }
@@ -236,7 +239,8 @@ export function handlePendingField(
       targetGroup.repeatable,
     );
     if (newEl) {
-      focusAtStart(newEl);
+      newEl.textContent = pendingText;
+      focusAtEnd(newEl);
     }
     return;
   }

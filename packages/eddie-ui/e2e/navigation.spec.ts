@@ -758,4 +758,144 @@ test.describe("Backspace behavior", () => {
 
     await expectFocused(costNumber);
   });
+
+  test("backspace at start of link merges text into previous link", async ({
+    page,
+  }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "Test"
+        Assets:Checking  100.00 USD
+      `,
+    );
+
+    const row = getPostingRow(page, { directive: 0, posting: 0 });
+    const pending = getPendingField(row);
+    const commodity = getField(row, "amount-commodity");
+
+    await focusFieldAtEnd(commodity);
+    await commodity.press("Space");
+
+    // Create first link
+    await pending.press("^");
+    const link1 = getFieldStartingWith(row, "links").first();
+    await typeInField(link1, "link-1");
+    await link1.press("Space");
+
+    // Create second link
+    await pending.press("^");
+    const link2 = getFieldStartingWith(row, "links").last();
+    await typeInField(link2, "link-2");
+
+    // Move to start and backspace
+    await link2.press("Home");
+    await link2.press("Backspace");
+
+    // link-2 should be merged into link-1
+    const links = getFieldStartingWith(row, "links");
+    await expect(links).toHaveCount(1);
+    await expectFieldText(links.first(), "link-1link-2");
+    await expectFocused(links.first());
+  });
+
+  test("backspace at start of tag merges text into previous field", async ({
+    page,
+  }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "Test"
+        Assets:Checking  100.00 USD
+      `,
+    );
+
+    const row = getPostingRow(page, { directive: 0, posting: 0 });
+    const pending = getPendingField(row);
+    const commodity = getField(row, "amount-commodity");
+
+    await focusFieldAtEnd(commodity);
+    await commodity.press("Space");
+
+    // Create a tag
+    await pending.press("#");
+    const tag = getFieldStartingWith(row, "tags").first();
+    await typeInField(tag, "my-tag");
+
+    // Move to start and backspace
+    await tag.press("Home");
+    await tag.press("Backspace");
+
+    // Tag text should be merged into commodity
+    const tags = getFieldStartingWith(row, "tags");
+    await expect(tags).toHaveCount(0);
+    await expectFieldText(commodity, "USDmy-tag");
+  });
+});
+
+test.describe("Trigger prepend in pending", () => {
+  test("typing ^ in pending with existing text moves text to new link", async ({
+    page,
+  }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "Test"
+        Assets:Checking  100.00 USD
+      `,
+    );
+
+    const row = getPostingRow(page, { directive: 0, posting: 0 });
+    const pending = getPendingField(row);
+    const commodity = getField(row, "amount-commodity");
+
+    await focusFieldAtEnd(commodity);
+    await commodity.press("Space");
+    await expectFocused(pending);
+
+    // Type some text in pending first
+    await typeInField(pending, "my-link");
+    await expectFieldText(pending, "my-link");
+
+    // Now move to start and type trigger
+    await pending.press("Home");
+    await pending.press("^");
+
+    // A link should be created with the text
+    const link = getFieldStartingWith(row, "links").first();
+    await expectFocused(link);
+    await expectFieldText(link, "my-link");
+    await expectFieldText(pending, "");
+  });
+
+  test("typing # in pending with existing text moves text to new tag", async ({
+    page,
+  }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "Test"
+        Assets:Checking  100.00 USD
+      `,
+    );
+
+    const row = getPostingRow(page, { directive: 0, posting: 0 });
+    const pending = getPendingField(row);
+    const commodity = getField(row, "amount-commodity");
+
+    await focusFieldAtEnd(commodity);
+    await commodity.press("Space");
+
+    // Type some text in pending
+    await typeInField(pending, "important");
+
+    // Type trigger (anywhere, should capture all text)
+    await pending.press("#");
+
+    // A tag should be created with the text
+    const tag = getFieldStartingWith(row, "tags").first();
+    await expectFocused(tag);
+    await expectFieldText(tag, "important");
+    await expectFieldText(pending, "");
+  });
 });

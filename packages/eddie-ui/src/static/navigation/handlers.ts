@@ -4,7 +4,12 @@
 
 import type { FieldGroup, GroupSpec, RowSchema } from "../fieldSchema.ts";
 import { focusAtEnd, focusAtStart, isAtEnd, isEmpty } from "./cursor.ts";
-import { findFieldElement, findLastRepeatableFieldElement, trimField } from "./dom.ts";
+import {
+  findFieldElement,
+  findLastRepeatableFieldElement,
+  findPendingField,
+  trimField,
+} from "./dom.ts";
 import { moveToPending } from "./pending.ts";
 import {
   findNextFieldInGroup,
@@ -13,6 +18,118 @@ import {
   hasRequiredBareNextField,
   isFieldGroup,
 } from "./schema.ts";
+
+export function handleBackspaceOnTriggeredField(
+  e: KeyboardEvent,
+  el: HTMLElement,
+  row: Element,
+  schema: RowSchema,
+  group: FieldGroup,
+  groupIndex: number,
+): boolean {
+  e.preventDefault();
+  const currentText = (el.textContent ?? "").trim();
+
+  // Find the previous field to merge into
+  const prevEl = findPreviousField(row, schema, group, groupIndex);
+  if (prevEl) {
+    const prevText = prevEl.textContent ?? "";
+    const insertPos = prevText.length;
+    prevEl.textContent = prevText + currentText;
+    el.remove();
+    focusAtPosition(prevEl, insertPos);
+    return true;
+  }
+
+  // No previous field - merge into pending
+  const pending = findPendingField(row);
+  if (pending) {
+    const pendingText = pending.textContent ?? "";
+    pending.textContent = pendingText + currentText;
+    el.remove();
+    focusAtStart(pending);
+    return true;
+  }
+
+  return false;
+}
+
+function findPreviousField(
+  row: Element,
+  schema: RowSchema,
+  currentGroup: FieldGroup,
+  currentGroupIndex: number,
+): HTMLElement | null {
+  // For repeatable fields, check if there's a previous instance of the same field
+  if (currentGroup.repeatable) {
+    const firstFieldName = getFirstFieldOfGroup(currentGroup);
+    const allInstances = findAllRepeatableFieldElements(row, firstFieldName);
+    const currentEl = row.querySelector<HTMLElement>(
+      '[data-field][contenteditable="true"]:focus',
+    );
+    if (currentEl && allInstances.length > 1) {
+      const idx = allInstances.indexOf(currentEl);
+      if (idx > 0) {
+        return allInstances[idx - 1];
+      }
+    }
+  }
+
+  // Try previous groups
+  for (let i = currentGroupIndex - 1; i >= 0; i--) {
+    const prevGroup = schema.groups[i];
+    const lastFieldName = getLastFieldOfGroup(prevGroup);
+    const el =
+      isFieldGroup(prevGroup) && prevGroup.repeatable
+        ? findLastRepeatableFieldElement(row, lastFieldName)
+        : findFieldElement(row, lastFieldName);
+    if (el) {
+      return el;
+    }
+  }
+
+  return null;
+}
+
+function findAllRepeatableFieldElements(
+  container: Element,
+  baseFieldName: string,
+): HTMLElement[] {
+  const pattern = new RegExp(`^${baseFieldName}(-\\d+)?$`);
+  const allFields = container.querySelectorAll<HTMLElement>(
+    '[data-field][contenteditable="true"]',
+  );
+  const matches: HTMLElement[] = [];
+  for (const el of allFields) {
+    const fieldName = el.dataset.field;
+    if (fieldName && pattern.test(fieldName)) {
+      matches.push(el);
+    }
+  }
+  return matches;
+}
+
+function focusAtPosition(el: HTMLElement, position: number): void {
+  el.focus();
+  const range = document.createRange();
+  const textNode = el.firstChild;
+  if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+    const safePos = Math.min(position, textNode.textContent?.length ?? 0);
+    range.setStart(textNode, safePos);
+    range.collapse(true);
+  } else if (el.childNodes.length === 0 && position === 0) {
+    range.selectNodeContents(el);
+    range.collapse(true);
+  } else {
+    range.selectNodeContents(el);
+    range.collapse(false);
+  }
+  const selection = window.getSelection();
+  if (selection) {
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+}
 
 export function handleBareFieldExit(
   e: KeyboardEvent,
@@ -108,7 +225,10 @@ export function handleFreetextFieldExit(
   return true;
 }
 
-export function hasValidNextGroup(schema: RowSchema, fromIndex: number): boolean {
+export function hasValidNextGroup(
+  schema: RowSchema,
+  fromIndex: number,
+): boolean {
   for (let i = fromIndex + 1; i < schema.groups.length; i++) {
     const group = schema.groups[i];
     // A group is "valid" if it's not optional or has a trigger
