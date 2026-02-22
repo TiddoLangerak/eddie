@@ -9,7 +9,7 @@
     "lint": "biome check .",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
-    "test:e2e": "npm run test:e2e --workspace @tiddo/eddie-ui",
+    "test:e2e": "npm run test:e2e --workspaces --if-present",
     "test:all": "npm run test && npm run test:e2e",
     "build": "npm run build --workspaces --if-present",
     "clean": "npm run clean --workspaces --if-present",
