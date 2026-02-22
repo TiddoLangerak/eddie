@@ -6,7 +6,6 @@
 - **Keep methods/functions small.** Prefer single responsibility; extract helpers when logic grows. Functions shouldn't usually grow beyond 20loc, preferably even under 10loc, and ideally around 5loc.
 - **Multiline blocks use braces:** Multiline if/else/for/while bodies must have braces; do not use single-statement shorthand for multiline bodies.
 - **Prefer functional-style iteration** over vanilla `for` loops: use `.map()`, `.filter()`, `.reduce()`, `.find()`, `.some()`, `.every()` etc.
-- **Write tests** for new and changed behavior. Co-locate or mirror test layout (e.g. `*.test.ts` / `*.spec.ts` next to source or under `__tests__`). Tests aren't needed for `beancount-types`.
 - **Dependencies:** We do not use third-party dependencies besides TypeScript. Prefer the standard library and in-repo packages; do not add new npm dependencies (e.g. no bundlers, no extra runtimes). When something would require a new dependency, solve it with TypeScript and Node built-ins instead.
 - **General-purpose utilities go in eddie-utils:** When writing reusable helper functions (string manipulation, async utilities, object helpers, etc.), put them in `@tiddo/eddie-utils` rather than in application-specific packages. This keeps utilities discoverable and avoids duplication.
 - **Format using Biome:** Run `npm run format` to format code.
@@ -16,6 +15,7 @@
 - **Node built-ins:** Use the `node:` prefix for Node.js built-in modules (e.g. `node:fs/promises`, `node:path`, `node:assert`, `node:test`).
 - **Relative imports:** Use explicit `.ts` extension in relative imports (e.g. `from "./foo.ts"`). Package imports use bare specifiers (e.g. `@tiddo/eddie-utils/files`).
 - **Type-only imports:** Use `import type` for imports that are only used as types.
+- **Write tests** for new and changed behavior. Co-locate or mirror test layout (e.g. `*.test.ts` / `*.spec.ts` next to source or under `__tests__`). Use `node:test` for tests that don't require a browser, and playwright for anything that needs the DOM. It's not needed to write type-level tests.
 - **Use describe/it for tests.** Use Node’s built-in test runner: `describe` and `it` from `node:test`, and `strict as assert` from `node:assert`. Group tests by class/function under test. E.g. :
   ```
   describe('myFunction', () => {
