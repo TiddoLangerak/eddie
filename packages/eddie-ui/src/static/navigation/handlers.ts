@@ -19,20 +19,29 @@ import {
   isFieldGroup,
 } from "./schema.ts";
 
-export function handleBackspaceOnTriggeredField(
+export function handleBackspaceMerge(
   e: KeyboardEvent,
   el: HTMLElement,
   row: Element,
   schema: RowSchema,
-  group: FieldGroup,
+  group: GroupSpec,
   groupIndex: number,
+  fieldIndex: number,
 ): boolean {
-  e.preventDefault();
   const currentText = (el.textContent ?? "").trim();
 
   // Find the previous field to merge into
-  const prevEl = findPreviousField(row, schema, group, groupIndex);
+  const prevEl = findPreviousFieldForMerge(
+    el,
+    row,
+    schema,
+    group,
+    groupIndex,
+    fieldIndex,
+  );
+
   if (prevEl) {
+    e.preventDefault();
     const prevText = prevEl.textContent ?? "";
     const insertPos = prevText.length;
     prevEl.textContent = prevText + currentText;
@@ -41,36 +50,46 @@ export function handleBackspaceOnTriggeredField(
     return true;
   }
 
-  // No previous field - merge into pending
-  const pending = findPendingField(row);
-  if (pending) {
-    const pendingText = pending.textContent ?? "";
-    pending.textContent = pendingText + currentText;
-    el.remove();
-    focusAtStart(pending);
-    return true;
-  }
-
+  // No previous field found - don't handle (let default behavior occur)
   return false;
 }
 
-function findPreviousField(
+function findPreviousFieldForMerge(
+  currentEl: HTMLElement,
   row: Element,
   schema: RowSchema,
-  currentGroup: FieldGroup,
+  currentGroup: GroupSpec,
   currentGroupIndex: number,
+  currentFieldIndex: number,
 ): HTMLElement | null {
-  // For repeatable fields, check if there's a previous instance of the same field
-  if (currentGroup.repeatable) {
+  // Within a field group, try previous field in same group first
+  if (isFieldGroup(currentGroup) && currentFieldIndex > 0) {
+    const prevField = currentGroup.fields[currentFieldIndex - 1];
+    const el = findFieldElement(row, prevField.name);
+    if (el) {
+      return el;
+    }
+  }
+
+  // For repeatable fields at index 0, check for previous instance of same group
+  if (isFieldGroup(currentGroup) && currentGroup.repeatable) {
     const firstFieldName = getFirstFieldOfGroup(currentGroup);
     const allInstances = findAllRepeatableFieldElements(row, firstFieldName);
-    const currentEl = row.querySelector<HTMLElement>(
-      '[data-field][contenteditable="true"]:focus',
-    );
-    if (currentEl && allInstances.length > 1) {
+    if (allInstances.length > 1) {
       const idx = allInstances.indexOf(currentEl);
       if (idx > 0) {
         return allInstances[idx - 1];
+      }
+    }
+  }
+
+  // For ambiguous-freetext: if in second field, merge into first
+  if (currentGroup.kind === "ambiguous-freetext") {
+    const currentFieldName = currentEl.dataset.field;
+    if (currentFieldName === currentGroup.fields.second) {
+      const firstEl = findFieldElement(row, currentGroup.fields.first);
+      if (firstEl) {
+        return firstEl;
       }
     }
   }

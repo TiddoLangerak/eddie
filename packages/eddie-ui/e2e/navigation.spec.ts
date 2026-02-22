@@ -729,7 +729,7 @@ test.describe("Field trimming", () => {
 });
 
 test.describe("Backspace behavior", () => {
-  test("backspace on empty field within group moves to previous field", async ({
+  test("backspace at start of commodity merges into amount-number", async ({
     page,
   }) => {
     await using _file = await loadTestFileContent(
@@ -741,22 +741,64 @@ test.describe("Backspace behavior", () => {
     );
 
     const row = getPostingRow(page, { directive: 0, posting: 0 });
-    const pending = getPendingField(row);
+    const amountNumber = getField(row, "amount-number");
     const commodity = getField(row, "amount-commodity");
 
-    await focusFieldAtEnd(commodity);
-    await commodity.press("Space");
-    await pending.press("{");
+    await commodity.click();
+    await commodity.press("Home");
+    await commodity.press("Backspace");
 
+    // USD should be merged into amount-number
+    await expectFocused(amountNumber);
+    await expectFieldText(amountNumber, "100.00USD");
+  });
+
+  test("backspace at start of cost-commodity merges into cost-number", async ({
+    page,
+  }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "Test"
+        Assets:Checking  100.00 USD {10 EUR}
+      `,
+    );
+
+    const row = getPostingRow(page, { directive: 0, posting: 0 });
     const costNumber = getField(row, "cost-number");
-    await typeInField(costNumber, "10");
-    await costNumber.press("Space");
-
     const costCommodity = getField(row, "cost-commodity");
-    await clearField(costCommodity);
+
+    await costCommodity.click();
+    await costCommodity.press("Home");
     await costCommodity.press("Backspace");
 
     await expectFocused(costNumber);
+    await expectFieldText(costNumber, "10EUR");
+  });
+
+  test("backspace at start of narration merges into payee", async ({
+    page,
+  }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "The Payee" "The Narration"
+        Assets:Checking  100.00 USD
+      `,
+    );
+
+    const row = getRow(page, 0).first();
+    const payee = getField(row, "payee");
+    const narration = getField(row, "narration");
+
+    await narration.click();
+    await narration.press("Home");
+    await narration.press("Backspace");
+
+    // Narration merged into payee, narration field removed
+    await expectFocused(payee);
+    await expectFieldText(payee, "The PayeeThe Narration");
+    await expect(narration).toHaveCount(0);
   });
 
   test("backspace at start of link merges text into previous link", async ({

@@ -17,14 +17,10 @@
  */
 
 import { getSchema } from "../fieldSchema.ts";
-import { focusAtEnd, isAtEnd, isAtStart, isEmpty } from "./cursor.ts";
+import { isAtEnd, isAtStart } from "./cursor.ts";
+import { getRowType } from "./dom.ts";
 import {
-  findFieldElement,
-  findLastRepeatableFieldElement,
-  getRowType,
-} from "./dom.ts";
-import {
-  handleBackspaceOnTriggeredField,
+  handleBackspaceMerge,
   handleBareFieldExit,
   handleFreetextFieldExit,
   handleSuffixExit,
@@ -32,11 +28,7 @@ import {
   moveToPrevField,
 } from "./handlers.ts";
 import { type NavigationCallbacks, handlePendingField } from "./pending.ts";
-import {
-  findCurrentFieldInSchema,
-  getLastFieldOfGroup,
-  isFieldGroup,
-} from "./schema.ts";
+import { findCurrentFieldInSchema, isFieldGroup } from "./schema.ts";
 
 export type { NavigationCallbacks } from "./pending.ts";
 
@@ -93,27 +85,13 @@ export function createKeyDownHandler(
       return;
     }
 
-    // Backspace at start of triggered field's FIRST field: merge with previous field
-    // Only applies to the first field of the group (the one after the trigger prefix)
-    if (
-      key === "Backspace" &&
-      isAtStart(el) &&
-      isFieldGroup(group) &&
-      group.prefix &&
-      fieldIndex === 0
-    ) {
+    // Backspace at start: merge with previous field
+    if (key === "Backspace" && isAtStart(el)) {
       if (
-        handleBackspaceOnTriggeredField(e, el, row, schema, group, groupIndex)
+        handleBackspaceMerge(e, el, row, schema, group, groupIndex, fieldIndex)
       ) {
         return;
       }
-    }
-
-    // Backspace on empty field
-    if (key === "Backspace" && isAtStart(el) && isEmpty(el)) {
-      e.preventDefault();
-      moveToPrevField(row, schema, group, groupIndex, fieldIndex);
-      return;
     }
 
     // Field-type specific exit handling
