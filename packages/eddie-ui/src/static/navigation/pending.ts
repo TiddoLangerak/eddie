@@ -14,6 +14,7 @@ import {
 } from "./dom.ts";
 import {
   findGroupByPrefix,
+  findGroupWithMissingField,
   findNextDefaultGroup,
   getFirstFieldOfGroup,
   getLastFieldOfGroup,
@@ -165,6 +166,26 @@ export function createRepeatableGroupInstance(
   return firstSpan;
 }
 
+/**
+ * Distribute pending text across multiple fields in a group.
+ * Splits on space and assigns parts to corresponding fields.
+ * E.g., "13 EUR" for price group → price-number="13", price-commodity="EUR"
+ */
+function distributePendingTextToGroup(
+  row: Element,
+  group: FieldGroup,
+  pendingText: string,
+): void {
+  const parts = pendingText.split(/\s+/);
+  for (let i = 0; i < group.fields.length && i < parts.length; i++) {
+    const field = group.fields[i];
+    const fieldEl = findFieldElement(row, field.name);
+    if (fieldEl) {
+      fieldEl.textContent = parts[i];
+    }
+  }
+}
+
 export function handlePendingField(
   e: KeyboardEvent,
   el: HTMLElement,
@@ -204,7 +225,9 @@ export function handlePendingField(
   const found = findGroupByPrefix(schema, key);
   if (found) {
     e.preventDefault();
-    trimField(el);
+    // Capture pending text before clearing (for prepend behavior)
+    const pendingText = (el.textContent ?? "").trim();
+    el.textContent = "";
 
     const { group: targetGroup, groupIndex: targetGroupIndex } = found;
     const firstFieldName = getFirstFieldOfGroup(targetGroup);
@@ -220,6 +243,7 @@ export function handlePendingField(
           row,
         );
         if (newEl) {
+          newEl.textContent = pendingText;
           focusAtStart(newEl);
         }
         return;
@@ -236,6 +260,12 @@ export function handlePendingField(
       targetGroup.repeatable,
     );
     if (newEl) {
+      // For multi-field groups, split pending text across fields
+      if (isFieldGroup(targetGroup) && targetGroup.fields.length > 1 && pendingText.includes(" ")) {
+        distributePendingTextToGroup(row, targetGroup, pendingText);
+      } else {
+        newEl.textContent = pendingText;
+      }
       focusAtStart(newEl);
     }
     return;
@@ -280,6 +310,27 @@ export function handlePendingField(
           return;
         }
       }
+    }
+
+    // Check for groups with missing fields (e.g., amount-number exists but amount-commodity was removed)
+    const missingField = findGroupWithMissingField(row, schema);
+    if (missingField) {
+      e.preventDefault();
+      trimField(el);
+      const field = missingField.group.fields[missingField.missingFieldIndex];
+      const span = createEditableSpan(field.name);
+      callbacks.onCreateField(span);
+      // Insert after the previous field in the group
+      const prevField = missingField.group.fields[missingField.missingFieldIndex - 1];
+      const prevEl = findFieldElement(row, prevField.name);
+      if (prevEl) {
+        prevEl.after(span);
+      } else {
+        el.before(span);
+      }
+      span.textContent = key;
+      focusAtEnd(span);
+      return;
     }
 
     // Check for next default group (optional group without trigger)

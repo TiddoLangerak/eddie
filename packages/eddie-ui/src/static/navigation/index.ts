@@ -17,9 +17,10 @@
  */
 
 import { getSchema } from "../fieldSchema.ts";
-import { isAtEnd, isAtStart, isEmpty } from "./cursor.ts";
+import { isAtEnd, isAtStart } from "./cursor.ts";
 import { getRowType } from "./dom.ts";
 import {
+  handleBackspaceMerge,
   handleBareFieldExit,
   handleFreetextFieldExit,
   handleSuffixExit,
@@ -84,11 +85,13 @@ export function createKeyDownHandler(
       return;
     }
 
-    // Backspace on empty field
-    if (key === "Backspace" && isAtStart(el) && isEmpty(el)) {
-      e.preventDefault();
-      moveToPrevField(row, schema, group, groupIndex, fieldIndex);
-      return;
+    // Backspace at start: merge with previous field
+    if (key === "Backspace" && isAtStart(el)) {
+      if (
+        handleBackspaceMerge(e, el, row, schema, group, groupIndex, fieldIndex)
+      ) {
+        return;
+      }
     }
 
     // Field-type specific exit handling

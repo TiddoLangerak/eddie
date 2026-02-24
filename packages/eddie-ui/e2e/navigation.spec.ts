@@ -4,6 +4,7 @@ import {
   expectFieldText,
   expectFocused,
   focusFieldAtEnd,
+  focusFieldAtStart,
   getField,
   getFieldStartingWith,
   getPendingField,
@@ -729,7 +730,217 @@ test.describe("Field trimming", () => {
 });
 
 test.describe("Backspace behavior", () => {
-  test("backspace on empty field within group moves to previous field", async ({
+  test("backspace at start of commodity merges into amount-number", async ({
+    page,
+  }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "Test"
+        Assets:Checking  100.00 USD
+      `,
+    );
+
+    const row = getPostingRow(page, { directive: 0, posting: 0 });
+    const amountNumber = getField(row, "amount-number");
+    const commodity = getField(row, "amount-commodity");
+
+    await focusFieldAtStart(commodity);
+    await commodity.press("Backspace");
+
+    // USD should be merged into amount-number
+    await expectFocused(amountNumber);
+    await expectFieldText(amountNumber, "100.00USD");
+  });
+
+  test("clearing commodity and typing creates new commodity field", async ({
+    page,
+  }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "Test"
+        Assets:Checking  100.00 USD
+      `,
+    );
+
+    const row = getPostingRow(page, { directive: 0, posting: 0 });
+    const amountNumber = getField(row, "amount-number");
+    const commodity = getField(row, "amount-commodity");
+
+    // Clear commodity by selecting all and deleting
+    await clearField(commodity);
+    // Backspace on empty commodity
+    await commodity.press("Backspace");
+
+    // Focus should be on amount-number
+    await expectFocused(amountNumber);
+    await expectFieldText(amountNumber, "100.00");
+
+    // Now type - this should create a new commodity field
+    await typeInField(amountNumber, " EUR");
+
+    // Should have split into number and commodity
+    const newCommodity = getField(row, "amount-commodity");
+    await expectFieldText(amountNumber, "100.00");
+    await expectFieldText(newCommodity, "EUR");
+  });
+
+  test("backspace at start of cost-commodity merges into cost-number", async ({
+    page,
+  }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "Test"
+        Assets:Checking  100.00 USD {10 EUR}
+      `,
+    );
+
+    const row = getPostingRow(page, { directive: 0, posting: 0 });
+    const costNumber = getField(row, "cost-number");
+    const costCommodity = getField(row, "cost-commodity");
+
+    await focusFieldAtStart(costCommodity);
+    await costCommodity.press("Backspace");
+
+    await expectFocused(costNumber);
+    await expectFieldText(costNumber, "10EUR");
+  });
+
+  test("backspace at start of cost-number moves cost content to pending", async ({
+    page,
+  }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "Test"
+        Assets:Checking  100.00 USD {10 EUR}
+      `,
+    );
+
+    const row = getPostingRow(page, { directive: 0, posting: 0 });
+    const pending = getPendingField(row);
+    const costNumber = getField(row, "cost-number");
+    const costCommodity = getField(row, "cost-commodity");
+
+    await focusFieldAtStart(costNumber);
+    await costNumber.press("Backspace");
+
+    // Cost content moved to pending, cost fields removed
+    await expectFocused(pending);
+    await expectFieldText(pending, "10 EUR");
+    await expect(costNumber).toHaveCount(0);
+    await expect(costCommodity).toHaveCount(0);
+  });
+
+  test("backspace then re-trigger restores cost group", async ({ page }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "Test"
+        Assets:Checking  100.00 USD {10 EUR}
+      `,
+    );
+
+    const row = getPostingRow(page, { directive: 0, posting: 0 });
+    const pending = getPendingField(row);
+
+    // Get cost-number and backspace to move content to pending
+    const costNumber = getField(row, "cost-number");
+    await focusFieldAtStart(costNumber);
+    await costNumber.press("Backspace");
+
+    await expectFocused(pending);
+    await expectFieldText(pending, "10 EUR");
+
+    // Re-trigger with { to restore cost group
+    await pending.press("{");
+
+    // Cost group should be restored with content distributed across fields
+    const newCostNumber = getField(row, "cost-number");
+    const newCostCommodity = getField(row, "cost-commodity");
+    await expectFocused(newCostNumber);
+    await expectFieldText(newCostNumber, "10");
+    await expectFieldText(newCostCommodity, "EUR");
+  });
+
+  test("backspace at start of narration merges payee into narration", async ({
+    page,
+  }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "The Payee" "The Narration"
+        Assets:Checking  100.00 USD
+      `,
+    );
+
+    const row = getRow(page, 0).first();
+    const payee = getField(row, "payee");
+    const narration = getField(row, "narration");
+
+    await focusFieldAtStart(narration);
+    await narration.press("Backspace");
+
+    // Payee merged into narration, payee field removed (narration is the required field)
+    await expectFocused(narration);
+    await expectFieldText(narration, "The PayeeThe Narration");
+    await expect(payee).toHaveCount(0);
+  });
+
+  test("backspace at start of link merges text into previous link", async ({
+    page,
+  }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "Test" ^link-1 ^link-2
+        Assets:Checking  100.00 USD
+      `,
+    );
+
+    const row = getRow(page, 0).first();
+    const links = getFieldStartingWith(row, "links");
+    const link1 = links.first();
+    const link2 = links.last();
+
+    await focusFieldAtStart(link2);
+    await link2.press("Backspace");
+
+    // link-2 should be merged into link-1
+    await expect(links).toHaveCount(1);
+    await expectFieldText(link1, "link-1link-2");
+    await expectFocused(link1);
+  });
+
+  test("backspace at start of tag merges text into previous field", async ({
+    page,
+  }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "Test" #my-tag
+        Assets:Checking  100.00 USD
+      `,
+    );
+
+    const row = getRow(page, 0).first();
+    const narration = getField(row, "narration");
+    const tag = getFieldStartingWith(row, "tags").first();
+
+    await focusFieldAtStart(tag);
+    await tag.press("Backspace");
+
+    // Tag text should be merged into narration
+    const tags = getFieldStartingWith(row, "tags");
+    await expect(tags).toHaveCount(0);
+    await expectFieldText(narration, "Testmy-tag");
+  });
+});
+
+test.describe("Trigger prepend in pending", () => {
+  test("typing ^ in pending with existing text moves text to new link", async ({
     page,
   }) => {
     await using _file = await loadTestFileContent(
@@ -746,16 +957,113 @@ test.describe("Backspace behavior", () => {
 
     await focusFieldAtEnd(commodity);
     await commodity.press("Space");
+    await expectFocused(pending);
+
+    // Type some text in pending first
+    await typeInField(pending, "my-link");
+    await expectFieldText(pending, "my-link");
+
+    // Now move to start and type trigger
+    await pending.press("Home");
+    await pending.press("^");
+
+    // A link should be created with the text
+    const link = getFieldStartingWith(row, "links").first();
+    await expectFocused(link);
+    await expectFieldText(link, "my-link");
+    await expectFieldText(pending, "");
+  });
+
+  test("typing # in pending with existing text moves text to new tag", async ({
+    page,
+  }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "Test"
+        Assets:Checking  100.00 USD
+      `,
+    );
+
+    const row = getPostingRow(page, { directive: 0, posting: 0 });
+    const pending = getPendingField(row);
+    const commodity = getField(row, "amount-commodity");
+
+    await focusFieldAtEnd(commodity);
+    await commodity.press("Space");
+
+    // Type some text in pending
+    await typeInField(pending, "important");
+
+    // Type trigger (anywhere, should capture all text)
+    await pending.press("#");
+
+    // A tag should be created with the text
+    const tag = getFieldStartingWith(row, "tags").first();
+    await expectFocused(tag);
+    await expectFieldText(tag, "important");
+    await expectFieldText(pending, "");
+  });
+
+  test("typing @ in pending with multi-word text distributes to price fields", async ({
+    page,
+  }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "Test"
+        Assets:Checking  100.00 USD
+      `,
+    );
+
+    const row = getPostingRow(page, { directive: 0, posting: 0 });
+    const pending = getPendingField(row);
+    const commodity = getField(row, "amount-commodity");
+
+    await focusFieldAtEnd(commodity);
+    await commodity.press("Space");
+
+    // Type "13 EUR" in pending (simulating content moved from backspacing a price group)
+    await typeInField(pending, "13 EUR");
+
+    // Type @ trigger - should split content across price-number and price-commodity
+    await pending.press("@");
+
+    const priceNumber = getField(row, "price-number");
+    const priceCommodity = getField(row, "price-commodity");
+    await expectFieldText(priceNumber, "13");
+    await expectFieldText(priceCommodity, "EUR");
+    await expectFieldText(pending, "");
+  });
+
+  test("typing { in pending with multi-word text distributes to cost fields", async ({
+    page,
+  }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "Test"
+        Assets:Checking  100.00 USD
+      `,
+    );
+
+    const row = getPostingRow(page, { directive: 0, posting: 0 });
+    const pending = getPendingField(row);
+    const commodity = getField(row, "amount-commodity");
+
+    await focusFieldAtEnd(commodity);
+    await commodity.press("Space");
+
+    // Type "10 EUR" in pending (simulating content moved from backspacing a cost group)
+    await typeInField(pending, "10 EUR");
+
+    // Type { trigger - should split content across cost-number and cost-commodity
     await pending.press("{");
 
     const costNumber = getField(row, "cost-number");
-    await typeInField(costNumber, "10");
-    await costNumber.press("Space");
-
     const costCommodity = getField(row, "cost-commodity");
-    await clearField(costCommodity);
-    await costCommodity.press("Backspace");
-
-    await expectFocused(costNumber);
+    await expectFieldText(costNumber, "10");
+    await expectFieldText(costCommodity, "EUR");
+    await expectFieldText(pending, "");
   });
 });

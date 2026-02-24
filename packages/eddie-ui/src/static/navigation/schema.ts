@@ -135,6 +135,35 @@ export function findNextDefaultGroup(
 }
 
 /**
+ * Find a group that has the first field present but is missing subsequent fields.
+ * This handles the case where e.g. amount-number exists but amount-commodity was removed.
+ */
+export function findGroupWithMissingField(
+  row: Element,
+  schema: RowSchema,
+): { group: FieldGroup; groupIndex: number; missingFieldIndex: number } | null {
+  for (let groupIndex = 0; groupIndex < schema.groups.length; groupIndex++) {
+    const group = schema.groups[groupIndex];
+    if (!isFieldGroup(group)) continue;
+    if (group.prefix) continue;
+    if (group.fields.length < 2) continue;
+
+    // Check if first field exists
+    const firstFieldEl = findFieldElement(row, group.fields[0].name);
+    if (!firstFieldEl) continue;
+
+    // Check if any subsequent field is missing
+    for (let fieldIndex = 1; fieldIndex < group.fields.length; fieldIndex++) {
+      const field = group.fields[fieldIndex];
+      if (!findFieldElement(row, field.name)) {
+        return { group, groupIndex, missingFieldIndex: fieldIndex };
+      }
+    }
+  }
+  return null;
+}
+
+/**
  * Get all trigger prefixes defined in the schema.
  */
 export function getTriggerPrefixes(schema: RowSchema): Set<string> {

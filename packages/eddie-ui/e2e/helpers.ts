@@ -74,8 +74,17 @@ export async function focusFieldAtEnd(field: Locator): Promise<void> {
 }
 
 export async function focusFieldAtStart(field: Locator): Promise<void> {
-  await field.click();
-  await field.press("Home");
+  await field.evaluate((el: HTMLElement) => {
+    el.focus();
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(true);
+    const selection = window.getSelection();
+    if (selection) {
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+  });
 }
 
 export async function typeInField(field: Locator, text: string): Promise<void> {

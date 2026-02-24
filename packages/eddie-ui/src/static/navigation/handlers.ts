@@ -7,6 +7,7 @@ import { focusAtEnd, focusAtStart, isAtEnd, isEmpty } from "./cursor.ts";
 import {
   findFieldElement,
   findLastRepeatableFieldElement,
+  findPendingField,
   trimField,
 } from "./dom.ts";
 import { moveToPending } from "./pending.ts";
@@ -17,6 +18,168 @@ import {
   hasRequiredBareNextField,
   isFieldGroup,
 } from "./schema.ts";
+
+export function handleBackspaceMerge(
+  e: KeyboardEvent,
+  el: HTMLElement,
+  row: Element,
+  schema: RowSchema,
+  group: GroupSpec,
+  groupIndex: number,
+  fieldIndex: number,
+): boolean {
+  const currentText = (el.textContent ?? "").trim();
+  const currentFieldName = el.dataset.field;
+
+  // Special handling for ambiguous-freetext (payee/narration)
+  // When backspacing from narration into payee, merge into narration (not payee)
+  // because narration is the required field
+  if (group.kind === "ambiguous-freetext") {
+    if (currentFieldName === group.fields.second) {
+      const firstEl = findFieldElement(row, group.fields.first);
+      if (firstEl) {
+        e.preventDefault();
+        const firstText = firstEl.textContent ?? "";
+        const insertPos = firstText.length;
+        // Merge: payee content + narration content → narration
+        el.textContent = firstText + currentText;
+        firstEl.remove();
+        focusAtPosition(el, insertPos);
+        return true;
+      }
+    }
+  }
+
+  // When at first field of a multi-field group, move entire group content to pending
+  if (isFieldGroup(group) && fieldIndex === 0 && group.fields.length > 1) {
+    const pending = findPendingField(row);
+    if (pending) {
+      e.preventDefault();
+      // Collect all content from group fields
+      const groupContent = group.fields
+        .map((f) => (findFieldElement(row, f.name)?.textContent ?? "").trim())
+        .filter((t) => t.length > 0)
+        .join(" ");
+      // Remove all fields in the group
+      for (const field of group.fields) {
+        findFieldElement(row, field.name)?.remove();
+      }
+      // Move content to pending
+      const pendingText = pending.textContent ?? "";
+      pending.textContent = groupContent + pendingText;
+      focusAtStart(pending);
+      return true;
+    }
+  }
+
+  // Find the previous field to merge into
+  const prevEl = findPreviousFieldForMerge(
+    el,
+    row,
+    schema,
+    group,
+    groupIndex,
+    fieldIndex,
+  );
+
+  if (prevEl) {
+    e.preventDefault();
+    const prevText = prevEl.textContent ?? "";
+    const insertPos = prevText.length;
+    prevEl.textContent = prevText + currentText;
+    el.remove();
+    focusAtPosition(prevEl, insertPos);
+    return true;
+  }
+
+  // No previous field found - don't handle (let default behavior occur)
+  return false;
+}
+
+function findPreviousFieldForMerge(
+  currentEl: HTMLElement,
+  row: Element,
+  schema: RowSchema,
+  currentGroup: GroupSpec,
+  currentGroupIndex: number,
+  currentFieldIndex: number,
+): HTMLElement | null {
+  // Within a field group, try previous field in same group first
+  if (isFieldGroup(currentGroup) && currentFieldIndex > 0) {
+    const prevField = currentGroup.fields[currentFieldIndex - 1];
+    const el = findFieldElement(row, prevField.name);
+    if (el) {
+      return el;
+    }
+  }
+
+  // For repeatable fields at index 0, check for previous instance of same group
+  if (isFieldGroup(currentGroup) && currentGroup.repeatable) {
+    const firstFieldName = getFirstFieldOfGroup(currentGroup);
+    const allInstances = findAllRepeatableFieldElements(row, firstFieldName);
+    if (allInstances.length > 1) {
+      const idx = allInstances.indexOf(currentEl);
+      if (idx > 0) {
+        return allInstances[idx - 1];
+      }
+    }
+  }
+
+  // Try previous groups
+  for (let i = currentGroupIndex - 1; i >= 0; i--) {
+    const prevGroup = schema.groups[i];
+    const lastFieldName = getLastFieldOfGroup(prevGroup);
+    const el =
+      isFieldGroup(prevGroup) && prevGroup.repeatable
+        ? findLastRepeatableFieldElement(row, lastFieldName)
+        : findFieldElement(row, lastFieldName);
+    if (el) {
+      return el;
+    }
+  }
+
+  return null;
+}
+
+function findAllRepeatableFieldElements(
+  container: Element,
+  baseFieldName: string,
+): HTMLElement[] {
+  const pattern = new RegExp(`^${baseFieldName}(-\\d+)?$`);
+  const allFields = container.querySelectorAll<HTMLElement>(
+    '[data-field][contenteditable="true"]',
+  );
+  const matches: HTMLElement[] = [];
+  for (const el of allFields) {
+    const fieldName = el.dataset.field;
+    if (fieldName && pattern.test(fieldName)) {
+      matches.push(el);
+    }
+  }
+  return matches;
+}
+
+function focusAtPosition(el: HTMLElement, position: number): void {
+  el.focus();
+  const range = document.createRange();
+  const textNode = el.firstChild;
+  if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+    const safePos = Math.min(position, textNode.textContent?.length ?? 0);
+    range.setStart(textNode, safePos);
+    range.collapse(true);
+  } else if (el.childNodes.length === 0 && position === 0) {
+    range.selectNodeContents(el);
+    range.collapse(true);
+  } else {
+    range.selectNodeContents(el);
+    range.collapse(false);
+  }
+  const selection = window.getSelection();
+  if (selection) {
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+}
 
 export function handleBareFieldExit(
   e: KeyboardEvent,
