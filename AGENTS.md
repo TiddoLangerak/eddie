@@ -33,6 +33,7 @@
 
 - **Plans should be focussed and to the point.** Avoid unnecessary detail or scope creep; keep task breakdowns concise and actionable.
 - **Start with the model, especially for plans.** Before jumping into implementation, we first want to understand and model the underlying general principals involved. Ideally, the features are almost an emergent property of the model. So start with creating a model, and then build the fetaures on top of that.
+- **Use test-driven development.**
 - **Run `nvm use` before npm/node commands.** Always run `nvm use` before executing any npm or node commands to ensure the correct Node.js version is active.
 - **Don't use `npx` commands.**. Instead, suggest operations to be added to `package.json` scripts.
 - **Update AGENTS.md with new learnings.** You are constantly improving yourself, so keep updating AGENTS.md based on patterns encountered in sessions.
@@ -40,6 +41,6 @@
 - **Run checks when making changes**. We have `npm run checks` for checks without end-to-end tests, and `npm run checks:all` for checks with end-to-end tests. When making changes that may influence the end UI, use `checks:all`.
 - **Use `nvm use && npm run format` to fix formatting issues.** Note that this command changes files, so make sure to refresh your context.
 - **Keep READMEs up-to-date when making changes.** When you change a package’s behavior, API, or scripts, update the relevant README so it stays accurate.
-- **Use squash merges when merging.**
+- **Use squash merges when merging.** Don't use normal merges. Don't use fast-forward merges. Only squash merges.
 - **Merge to main locally.** If main is already checked out in another worktree, then cd into that twork tree, stash, merge, unstash.
 - **Assume local branches.** E.g. when I ask to rebase onto main, rebase onto the _local_ main, not the remote main.
