@@ -261,7 +261,11 @@ export function handlePendingField(
     );
     if (newEl) {
       // For multi-field groups, split pending text across fields
-      if (isFieldGroup(targetGroup) && targetGroup.fields.length > 1 && pendingText.includes(" ")) {
+      if (
+        isFieldGroup(targetGroup) &&
+        targetGroup.fields.length > 1 &&
+        pendingText.includes(" ")
+      ) {
         distributePendingTextToGroup(row, targetGroup, pendingText);
       } else {
         newEl.textContent = pendingText;
@@ -321,7 +325,8 @@ export function handlePendingField(
       const span = createEditableSpan(field.name);
       callbacks.onCreateField(span);
       // Insert after the previous field in the group
-      const prevField = missingField.group.fields[missingField.missingFieldIndex - 1];
+      const prevField =
+        missingField.group.fields[missingField.missingFieldIndex - 1];
       const prevEl = findFieldElement(row, prevField.name);
       if (prevEl) {
         prevEl.after(span);
