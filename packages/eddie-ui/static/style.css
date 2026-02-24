@@ -479,6 +479,11 @@ button:hover {
   margin-left: 0.5ch;
 }
 
+/* Spacing before pending field (visible space for typing) */
+[data-field] + [data-field="pending"] {
+  margin-left: 1ch;
+}
+
 /* Payee followed by narration gets em-dash */
 [data-field="payee"] + [data-field="narration"]::before {
   content: "— ";

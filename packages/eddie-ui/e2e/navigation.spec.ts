@@ -753,6 +753,39 @@ test.describe("Backspace behavior", () => {
     await expectFieldText(amountNumber, "100.00USD");
   });
 
+  test("clearing commodity and typing creates new commodity field", async ({
+    page,
+  }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "Test"
+        Assets:Checking  100.00 USD
+      `,
+    );
+
+    const row = getPostingRow(page, { directive: 0, posting: 0 });
+    const amountNumber = getField(row, "amount-number");
+    const commodity = getField(row, "amount-commodity");
+
+    // Clear commodity by selecting all and deleting
+    await clearField(commodity);
+    // Backspace on empty commodity
+    await commodity.press("Backspace");
+
+    // Focus should be on amount-number
+    await expectFocused(amountNumber);
+    await expectFieldText(amountNumber, "100.00");
+
+    // Now type - this should create a new commodity field
+    await typeInField(amountNumber, " EUR");
+
+    // Should have split into number and commodity
+    const newCommodity = getField(row, "amount-commodity");
+    await expectFieldText(amountNumber, "100.00");
+    await expectFieldText(newCommodity, "EUR");
+  });
+
   test("backspace at start of cost-commodity merges into cost-number", async ({
     page,
   }) => {
@@ -824,10 +857,12 @@ test.describe("Backspace behavior", () => {
     // Re-trigger with { to restore cost group
     await pending.press("{");
 
-    // Cost group should be restored with original content
+    // Cost group should be restored with content distributed across fields
     const newCostNumber = getField(row, "cost-number");
+    const newCostCommodity = getField(row, "cost-commodity");
     await expectFocused(newCostNumber);
-    await expectFieldText(newCostNumber, "10 EUR");
+    await expectFieldText(newCostNumber, "10");
+    await expectFieldText(newCostCommodity, "EUR");
   });
 
   test("backspace at start of narration merges payee into narration", async ({
@@ -967,6 +1002,68 @@ test.describe("Trigger prepend in pending", () => {
     const tag = getFieldStartingWith(row, "tags").first();
     await expectFocused(tag);
     await expectFieldText(tag, "important");
+    await expectFieldText(pending, "");
+  });
+
+  test("typing @ in pending with multi-word text distributes to price fields", async ({
+    page,
+  }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "Test"
+        Assets:Checking  100.00 USD
+      `,
+    );
+
+    const row = getPostingRow(page, { directive: 0, posting: 0 });
+    const pending = getPendingField(row);
+    const commodity = getField(row, "amount-commodity");
+
+    await focusFieldAtEnd(commodity);
+    await commodity.press("Space");
+
+    // Type "13 EUR" in pending (simulating content moved from backspacing a price group)
+    await typeInField(pending, "13 EUR");
+
+    // Type @ trigger - should split content across price-number and price-commodity
+    await pending.press("@");
+
+    const priceNumber = getField(row, "price-number");
+    const priceCommodity = getField(row, "price-commodity");
+    await expectFieldText(priceNumber, "13");
+    await expectFieldText(priceCommodity, "EUR");
+    await expectFieldText(pending, "");
+  });
+
+  test("typing { in pending with multi-word text distributes to cost fields", async ({
+    page,
+  }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "Test"
+        Assets:Checking  100.00 USD
+      `,
+    );
+
+    const row = getPostingRow(page, { directive: 0, posting: 0 });
+    const pending = getPendingField(row);
+    const commodity = getField(row, "amount-commodity");
+
+    await focusFieldAtEnd(commodity);
+    await commodity.press("Space");
+
+    // Type "10 EUR" in pending (simulating content moved from backspacing a cost group)
+    await typeInField(pending, "10 EUR");
+
+    // Type { trigger - should split content across cost-number and cost-commodity
+    await pending.press("{");
+
+    const costNumber = getField(row, "cost-number");
+    const costCommodity = getField(row, "cost-commodity");
+    await expectFieldText(costNumber, "10");
+    await expectFieldText(costCommodity, "EUR");
     await expectFieldText(pending, "");
   });
 });
