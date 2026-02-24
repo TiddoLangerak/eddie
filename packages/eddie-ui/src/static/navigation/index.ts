@@ -19,6 +19,7 @@
 import { getSchema } from "../fieldSchema.ts";
 import { isAtEnd, isAtStart } from "./cursor.ts";
 import { getRowType } from "./dom.ts";
+import { handleEnterKey } from "./enter.ts";
 import {
   handleBackspaceMerge,
   handleBareFieldExit,
@@ -54,9 +55,9 @@ export function createKeyDownHandler(
 
     const key = e.key;
 
-    // Suppress newlines in all fields
     if (key === "Enter") {
       e.preventDefault();
+      handleEnterKey(row, callbacks);
       return;
     }
 

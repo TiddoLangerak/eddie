@@ -655,7 +655,7 @@ test.describe("Payee/Narration ambiguous fields", () => {
   });
 });
 
-test.describe("Enter key suppression", () => {
+test.describe("Enter key behavior in fields", () => {
   test("Enter does not create newlines in fields", async ({ page }) => {
     await using _file = await loadTestFileContent(
       page,
@@ -671,11 +671,179 @@ test.describe("Enter key suppression", () => {
     await clearField(narration);
     await typeInField(narration, "line1");
     await narration.press("Enter");
-    await typeInField(narration, "line2");
 
     const text = await narration.textContent();
     expect(text).not.toContain("\n");
-    expect(text).toBe("line1line2");
+    expect(text).toBe("line1");
+  });
+});
+
+test.describe("Enter key creates new rows", () => {
+  test("Enter on posting row creates new posting below", async ({ page }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "Test"
+        Assets:Checking  100.00 USD
+      `,
+    );
+
+    const row = getPostingRow(page, { directive: 0, posting: 0 });
+    const account = getField(row, "account");
+
+    await focusFieldAtEnd(account);
+    await account.press("Enter");
+
+    const newRow = getPostingRow(page, { directive: 0, posting: 1 });
+    await expect(newRow).toBeVisible();
+    const newAccount = getField(newRow, "account");
+    await expectFocused(newAccount);
+  });
+
+  test("Enter on transaction header creates new posting as first posting", async ({
+    page,
+  }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "Test"
+        Assets:Checking  100.00 USD
+      `,
+    );
+
+    const headerRow = getRow(page, 0).first();
+    const narration = getField(headerRow, "narration");
+
+    await focusFieldAtEnd(narration);
+    await narration.press("Enter");
+
+    // New posting should be at index 0 (first posting)
+    const newRow = getPostingRow(page, { directive: 0, posting: 0 });
+    await expect(newRow).toBeVisible();
+    const newAccount = getField(newRow, "account");
+    await expectFocused(newAccount);
+    // The empty new posting should have no text
+    await expectFieldText(newAccount, "");
+
+    // Original posting should now be at index 1
+    const movedRow = getPostingRow(page, { directive: 0, posting: 1 });
+    const movedAccount = getField(movedRow, "account");
+    await expectFieldText(movedAccount, "Assets:Checking");
+  });
+
+  test("Enter on empty posting removes it and shows directive type dropdown", async ({
+    page,
+  }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "Test"
+        Assets:Checking  100.00 USD
+      `,
+    );
+
+    // First create a new posting via Enter
+    const existingRow = getPostingRow(page, { directive: 0, posting: 0 });
+    const existingAccount = getField(existingRow, "account");
+    await focusFieldAtEnd(existingAccount);
+    await existingAccount.press("Enter");
+
+    // Now we have an empty posting at index 1
+    const emptyRow = getPostingRow(page, { directive: 0, posting: 1 });
+    await expect(emptyRow).toBeVisible();
+    const emptyAccount = getField(emptyRow, "account");
+    await expectFocused(emptyAccount);
+
+    // Press Enter on the empty posting
+    await emptyAccount.press("Enter");
+
+    // Empty posting should be removed
+    await expect(emptyRow).not.toBeVisible();
+
+    // Dropdown should be visible
+    const dropdown = page.locator(".dropdown");
+    await expect(dropdown).toBeVisible();
+
+    // Select transaction type (press Enter on default selection)
+    await page.keyboard.press("Enter");
+
+    // New directive row should be created at index 1
+    const newDirective = getRow(page, 1).first();
+    await expect(newDirective).toBeVisible();
+  });
+
+  test("Enter on non-transaction directive shows type dropdown and creates new directive", async ({
+    page,
+  }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 balance Assets:Checking  100.00 USD
+      `,
+    );
+
+    const row = getRow(page, 0).first();
+    const account = getField(row, "account");
+
+    await focusFieldAtEnd(account);
+    await account.press("Enter");
+
+    // Dropdown should be visible
+    const dropdown = page.locator(".dropdown");
+    await expect(dropdown).toBeVisible();
+
+    // Select transaction type (press Enter on default selection)
+    await page.keyboard.press("Enter");
+
+    // New directive row should be created below
+    const newDirective = getRow(page, 1).first();
+    await expect(newDirective).toBeVisible();
+  });
+
+  test("Tab from date in new directive goes to narration without creating payee", async ({
+    page,
+  }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 balance Assets:Checking  100.00 USD
+      `,
+    );
+
+    const row = getRow(page, 0).first();
+    const account = getField(row, "account");
+
+    await focusFieldAtEnd(account);
+    await account.press("Enter");
+
+    // Select transaction type
+    const dropdown = page.locator(".dropdown");
+    await expect(dropdown).toBeVisible();
+    await page.keyboard.press("Enter");
+
+    // Wait for dropdown to close
+    await expect(dropdown).not.toBeVisible();
+
+    // New directive row should be created
+    const newDirective = getRow(page, 1).first();
+    await expect(newDirective).toBeVisible();
+
+    // Date field should be focused (empty fields may not be "visible" to Playwright)
+    const dateField = getField(newDirective, "date");
+    await expect(dateField).toBeAttached();
+    await expectFocused(dateField);
+
+    // Type a date and press Tab
+    await typeInField(dateField, "2024-01-20");
+    await dateField.press("Tab");
+
+    // Focus should now be on narration field (not pending, not payee)
+    const narration = getField(newDirective, "narration");
+    await expectFocused(narration);
+
+    // There should be no payee field
+    const payee = newDirective.locator('[data-field="payee"]');
+    await expect(payee).toHaveCount(0);
   });
 });
 

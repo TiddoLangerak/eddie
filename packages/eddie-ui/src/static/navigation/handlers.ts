@@ -229,6 +229,20 @@ export function handleBareFieldExit(
     }
   }
 
+  // Try to find the next existing field in subsequent groups
+  const groupIndex = schema.groups.indexOf(group);
+  if (groupIndex !== -1) {
+    for (let i = groupIndex + 1; i < schema.groups.length; i++) {
+      const nextGroup = schema.groups[i];
+      const firstFieldName = getFirstFieldOfGroup(nextGroup);
+      const nextEl = findFieldElement(row, firstFieldName);
+      if (nextEl) {
+        focusAtStart(nextEl);
+        return true;
+      }
+    }
+  }
+
   // Otherwise go to pending
   moveToPending(row);
   return true;

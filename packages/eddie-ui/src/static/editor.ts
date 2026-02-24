@@ -1,12 +1,35 @@
-import {
-  type BeancountFile,
-  type Directive,
-  type Posting,
-  beancountFile,
+import type {
+  Balance,
+  Event as BeancountEvent,
+  BeancountFile,
+  Close,
+  Commodity,
+  Custom,
+  Directive,
+  Document,
+  FormattingInfo,
+  Include,
+  Note,
+  Open,
+  Option,
+  Pad,
+  Plugin,
+  Posting,
+  Price,
+  Query,
+  Transaction,
 } from "@tiddo/beancount-types";
+import { beancountFile } from "@tiddo/beancount-types";
 import { isErr, object, string } from "@tiddo/eddie-parry";
 import { type PathSegment, setValue } from "@tiddo/eddie-utils/objects";
+import {
+  createDirectiveRow,
+  createPostingRow,
+  renumberDirectiveIndices,
+  renumberPostingIndices,
+} from "./navigation/dom.ts";
 import { createKeyDownHandler } from "./navigation/index.ts";
+import { showTypeSelector } from "./navigation/typeSelector.ts";
 
 export interface BeancountData {
   file: string;
@@ -64,6 +87,148 @@ function fieldPath(fieldName: string): PathSegment[] {
   });
 }
 
+const emptyFormatting: FormattingInfo = {
+  header: [],
+  footer: [],
+  inlineComment: undefined,
+};
+
+function createEmptyDirective(type: string): Directive {
+  switch (type) {
+    case "transaction":
+      return {
+        type: "transaction",
+        date: "",
+        flag: "*",
+        narration: "",
+        tags: [],
+        links: [],
+        postings: [],
+        metadata: {},
+        metadataHeader: [],
+        formatting: emptyFormatting,
+      } satisfies Transaction;
+    case "balance":
+      return {
+        type: "balance",
+        date: "",
+        account: "",
+        amount: { number: "", commodity: "" },
+        formatting: emptyFormatting,
+      } satisfies Balance;
+    case "open":
+      return {
+        type: "open",
+        date: "",
+        account: "",
+        commodities: [],
+        formatting: emptyFormatting,
+      } satisfies Open;
+    case "close":
+      return {
+        type: "close",
+        date: "",
+        account: "",
+        formatting: emptyFormatting,
+      } satisfies Close;
+    case "commodity":
+      return {
+        type: "commodity",
+        date: "",
+        commodity: "",
+        formatting: emptyFormatting,
+      } satisfies Commodity;
+    case "pad":
+      return {
+        type: "pad",
+        date: "",
+        account: "",
+        sourceAccount: "",
+        formatting: emptyFormatting,
+      } satisfies Pad;
+    case "note":
+      return {
+        type: "note",
+        date: "",
+        account: "",
+        comment: "",
+        formatting: emptyFormatting,
+      } satisfies Note;
+    case "document":
+      return {
+        type: "document",
+        date: "",
+        account: "",
+        filename: "",
+        formatting: emptyFormatting,
+      } satisfies Document;
+    case "price":
+      return {
+        type: "price",
+        date: "",
+        commodity: "",
+        amount: { number: "", commodity: "" },
+        formatting: emptyFormatting,
+      } satisfies Price;
+    case "event":
+      return {
+        type: "event",
+        date: "",
+        eventType: "",
+        description: "",
+        formatting: emptyFormatting,
+      } satisfies BeancountEvent;
+    case "query":
+      return {
+        type: "query",
+        date: "",
+        name: "",
+        queryString: "",
+        formatting: emptyFormatting,
+      } satisfies Query;
+    case "custom":
+      return {
+        type: "custom",
+        date: "",
+        customType: "",
+        values: [],
+        formatting: emptyFormatting,
+      } satisfies Custom;
+    case "include":
+      return {
+        type: "include",
+        filename: "",
+        formatting: emptyFormatting,
+      } satisfies Include;
+    case "plugin":
+      return {
+        type: "plugin",
+        module: "",
+        formatting: emptyFormatting,
+      } satisfies Plugin;
+    case "option":
+      return {
+        type: "option",
+        name: "",
+        value: "",
+        formatting: emptyFormatting,
+      } satisfies Option;
+    default:
+      return {
+        type: "transaction",
+        date: "",
+        flag: "*",
+        narration: "",
+        tags: [],
+        links: [],
+        postings: [],
+        metadata: {},
+        metadataHeader: [],
+        formatting: emptyFormatting,
+      } satisfies Transaction;
+  }
+}
+
 function initEditor(): void {
   const data = getData();
   if (!data?.model) return;
@@ -101,8 +266,159 @@ function initEditor(): void {
     el.addEventListener("keydown", handleKeyDown);
   }
 
+  function onCreatePosting(afterRow: Element): HTMLElement | null {
+    const directiveIndex = getNumberAttribute(afterRow, "data-directive-index");
+    if (directiveIndex == null) return null;
+
+    const directive = model.directives[directiveIndex];
+    if (!directive || directive.type !== "transaction") return null;
+
+    const afterPostingIndex = getNumberAttribute(
+      afterRow,
+      "data-posting-index",
+    );
+    const isTransactionHeader = afterPostingIndex == null;
+    const insertIndex = isTransactionHeader ? 0 : afterPostingIndex + 1;
+
+    const newPosting: Posting = {
+      account: "",
+      metadata: {},
+      formatting: { header: [], footer: [], inlineComment: undefined },
+    };
+
+    directive.postings.splice(insertIndex, 0, newPosting);
+
+    const newRow = createPostingRow(
+      directiveIndex,
+      insertIndex,
+      registerFieldHandlers,
+    );
+    afterRow.after(newRow);
+
+    const tbody = afterRow.closest("tbody");
+    if (tbody) renumberPostingIndices(tbody);
+
+    return newRow;
+  }
+
+  function onShowDirectiveTypeSelector(afterRow: Element): void {
+    const afterDirectiveIndex = getNumberAttribute(
+      afterRow,
+      "data-directive-index",
+    );
+    if (afterDirectiveIndex == null) return;
+
+    const lastRowOfDirective = findLastRowOfDirective(afterRow);
+
+    const placeholderRow = createPlaceholderDirectiveRow();
+    lastRowOfDirective.after(placeholderRow);
+
+    const tbody = afterRow.closest("tbody");
+    if (tbody) renumberDirectiveIndices(tbody);
+
+    const typeCell =
+      placeholderRow.querySelector<HTMLElement>(".directive-type");
+    const anchor = typeCell ?? (placeholderRow as HTMLElement);
+
+    showTypeSelector(anchor, {
+      onTypeSelected: (type) => {
+        finalizeDirective(placeholderRow, type);
+      },
+      onCancel: () => {
+        removeDirectivePlaceholder(placeholderRow);
+      },
+    });
+  }
+
+  function createPlaceholderDirectiveRow(): HTMLTableRowElement {
+    const tr = document.createElement("tr");
+    tr.className = "directive-row directive-type-txn";
+    tr.setAttribute("data-row-type", "transaction");
+    tr.setAttribute(
+      "data-directive-index",
+      "new",
+    ); /* unique so renumberDirectiveIndices treats it as its own directive */
+
+    const dateCell = document.createElement("td");
+    dateCell.className = "directive-date";
+
+    const typeCell = document.createElement("td");
+    typeCell.className = "directive-type";
+
+    const detailsCell = document.createElement("td");
+    detailsCell.className = "directive-details";
+
+    tr.appendChild(dateCell);
+    tr.appendChild(typeCell);
+    tr.appendChild(detailsCell);
+
+    return tr;
+  }
+
+  function finalizeDirective(placeholderRow: Element, type: string): void {
+    const directiveIndex = getNumberAttribute(
+      placeholderRow,
+      "data-directive-index",
+    );
+    if (directiveIndex == null) {
+      placeholderRow.remove();
+      return;
+    }
+
+    const newDirective = createEmptyDirective(type);
+    model.directives.splice(directiveIndex, 0, newDirective);
+
+    const newRow = createDirectiveRow(
+      directiveIndex,
+      type,
+      registerFieldHandlers,
+    );
+    placeholderRow.replaceWith(newRow);
+
+    const firstField = newRow.querySelector<HTMLElement>(
+      '[data-field][contenteditable="true"]',
+    );
+    if (firstField) firstField.focus();
+  }
+
+  function removeDirectivePlaceholder(placeholderRow: Element): void {
+    const tbody = placeholderRow.closest("tbody");
+    placeholderRow.remove();
+    if (tbody) renumberDirectiveIndices(tbody);
+  }
+
+  function onRemovePosting(row: Element): void {
+    const directiveIndex = getNumberAttribute(row, "data-directive-index");
+    const postingIndex = getNumberAttribute(row, "data-posting-index");
+    if (directiveIndex == null || postingIndex == null) return;
+
+    const directive = model.directives[directiveIndex];
+    if (!directive || directive.type !== "transaction") return;
+
+    directive.postings.splice(postingIndex, 1);
+    const tbody = row.closest("tbody");
+    row.remove();
+    if (tbody) renumberPostingIndices(tbody);
+  }
+
+  function findLastRowOfDirective(directiveRow: Element): Element {
+    const directiveIndex = directiveRow.getAttribute("data-directive-index");
+    if (directiveIndex == null) return directiveRow;
+
+    const tbody = directiveRow.closest("tbody");
+    if (!tbody) return directiveRow;
+
+    const allRows = tbody.querySelectorAll(
+      `tr[data-directive-index="${directiveIndex}"]`,
+    );
+    return allRows.length > 0 ? allRows[allRows.length - 1] : directiveRow;
+  }
+
   const handleKeyDown = createKeyDownHandler({
     onCreateField: registerFieldHandlers,
+    onCreatePosting,
+    onShowDirectiveTypeSelector,
+    onRemovePosting,
   });
 
   for (const el of document.querySelectorAll(

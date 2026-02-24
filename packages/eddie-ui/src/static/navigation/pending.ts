@@ -24,6 +24,9 @@ import {
 
 export interface NavigationCallbacks {
   onCreateField: (el: HTMLElement) => void;
+  onCreatePosting: (afterRow: Element) => HTMLElement | null;
+  onShowDirectiveTypeSelector: (afterRow: Element) => void;
+  onRemovePosting: (row: Element) => void;
 }
 
 export function moveToPending(row: Element): void {
