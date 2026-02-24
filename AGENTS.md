@@ -44,3 +44,4 @@
 - **Use squash merges when merging.** Don't use normal merges. Don't use fast-forward merges. Only squash merges.
 - **Merge to main locally.** If main is already checked out in another worktree, then cd into that twork tree, stash, merge, unstash.
 - **Assume local branches.** E.g. when I ask to rebase onto main, rebase onto the _local_ main, not the remote main.
+- **Keep the README.md up-to-date.**. Even when not explicitly instructed, assume that the README.md needs to be kept up-to-date. This applies to root README.md, as well as any smaller scoped readmes.
