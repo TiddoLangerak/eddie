@@ -26,11 +26,11 @@ function handlePostingEnter(
   row: Element,
   callbacks: NavigationCallbacks,
 ): void {
-  if (isEmptyPosting(row)) {
+  if (isEmptyRow(row)) {
     const parentDirectiveRow = findParentDirectiveRow(row);
     callbacks.onRemovePosting(row);
     if (parentDirectiveRow) {
-      callbacks.onShowDirectiveTypeSelector(parentDirectiveRow);
+      callbacks.onInsertNewDirective(parentDirectiveRow);
     }
   } else {
     const newRow = callbacks.onCreatePosting(row);
@@ -50,18 +50,17 @@ function handleDirectiveEnter(
   row: Element,
   callbacks: NavigationCallbacks,
 ): void {
-  callbacks.onShowDirectiveTypeSelector(row);
+  callbacks.onInsertNewDirective(row);
 }
 
-function isEmptyPosting(row: Element): boolean {
-  const accountField = findFieldElement(row, "account");
-  const amountField = findFieldElement(row, "amount-number");
-  const accountText = (accountField?.textContent ?? "").trim();
-  const amountText = (amountField?.textContent ?? "").trim();
-  return accountText === "" && amountText === "";
+export function isEmptyRow(row: Element): boolean {
+  const fields = row.querySelectorAll<HTMLElement>(
+      '[data-field][contenteditable="true"]',
+  );
+  return [...fields].every((el) => (el.textContent ?? "").trim() === "");
 }
 
-function findParentDirectiveRow(postingRow: Element): Element | null {
+export function findParentDirectiveRow(postingRow: Element): Element | null {
   const directiveIndex = postingRow.getAttribute("data-directive-index");
   if (directiveIndex == null) return null;
 

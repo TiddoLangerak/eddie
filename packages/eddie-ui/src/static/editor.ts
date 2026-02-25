@@ -25,9 +25,11 @@ import { type PathSegment, setValue } from "@tiddo/eddie-utils/objects";
 import {
   createDirectiveRow,
   createPostingRow,
+  getRowType,
   renumberDirectiveIndices,
   renumberPostingIndices,
 } from "./navigation/dom.ts";
+import { findParentDirectiveRow, isEmptyRow } from "./navigation/enter.ts";
 import { createKeyDownHandler } from "./navigation/index.ts";
 import { showTypeSelector } from "./navigation/typeSelector.ts";
 
@@ -259,6 +261,8 @@ function initEditor(): void {
     const path = fieldPath(field);
     const value = (el.textContent ?? "").trim();
     setValue(target as unknown as Record<string, unknown>, path, value);
+
+    onRemoveEmptyRow(row);
   }
 
   function registerFieldHandlers(el: Element): void {
@@ -401,6 +405,73 @@ function initEditor(): void {
     if (tbody) renumberPostingIndices(tbody);
   }
 
+  function onRemoveDirective(row: Element): void {
+    const directiveIndexAttr = row.getAttribute("data-directive-index");
+    if (directiveIndexAttr == null) return;
+
+    if (directiveIndexAttr === "new") {
+      removeDirectivePlaceholder(row);
+      return;
+    }
+
+    const directiveIndex = Number.parseInt(directiveIndexAttr, 10);
+    if (Number.isNaN(directiveIndex)) return;
+
+    const tbody = row.closest("tbody");
+    if (!tbody) return;
+
+    const rowsToRemove = [
+      ...tbody.querySelectorAll(
+        `tr[data-directive-index="${directiveIndexAttr}"]`,
+      ),
+    ];
+    const firstRow = rowsToRemove[0];
+    const lastRow = rowsToRemove[rowsToRemove.length - 1];
+    const prevRow = firstRow?.previousElementSibling ?? null;
+    const nextRow = lastRow?.nextElementSibling ?? null;
+
+    model.directives.splice(directiveIndex, 1);
+    for (const r of rowsToRemove) {
+      r.remove();
+    }
+    renumberDirectiveIndices(tbody);
+
+    if (prevRow) {
+      focusLastEditableInRow(prevRow);
+    } else if (nextRow) {
+      focusFirstEditableInRow(nextRow);
+    }
+  }
+
+  function focusFirstEditableInRow(row: Element): void {
+    const el = row.querySelector<HTMLElement>(
+      '[data-field][contenteditable="true"]',
+    );
+    if (el) el.focus();
+  }
+
+  function focusLastEditableInRow(row: Element): void {
+    const els = row.querySelectorAll<HTMLElement>(
+      '[data-field][contenteditable="true"]',
+    );
+    const last = els[els.length - 1];
+    if (last) last.focus();
+  }
+
+  function onRemoveEmptyRow(row: Element): void {
+    const rowType = getRowType(row);
+    if (!rowType || !isEmptyRow(row)) return;
+
+    if (rowType === "posting") {
+      onRemovePosting(row);
+      const prevRow = row.previousElementSibling;
+      if (!prevRow) return;
+      focusLastEditableInRow(prevRow);
+    } else {
+      onRemoveDirective(row);
+    }
+  }
+
   function findLastRowOfDirective(directiveRow: Element): Element {
     const directiveIndex = directiveRow.getAttribute("data-directive-index");
     if (directiveIndex == null) return directiveRow;
@@ -417,8 +488,10 @@ function initEditor(): void {
   const handleKeyDown = createKeyDownHandler({
     onCreateField: registerFieldHandlers,
     onCreatePosting,
-    onShowDirectiveTypeSelector,
+    onInsertNewDirective: onShowDirectiveTypeSelector,
     onRemovePosting,
+    onRemoveDirective,
+    onRemoveEmptyRow,
   });
 
   for (const el of document.querySelectorAll(

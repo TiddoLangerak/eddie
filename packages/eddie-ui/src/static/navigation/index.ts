@@ -19,7 +19,7 @@
 import { getSchema } from "../fieldSchema.ts";
 import { isAtEnd, isAtStart } from "./cursor.ts";
 import { getRowType } from "./dom.ts";
-import { handleEnterKey } from "./enter.ts";
+import { handleEnterKey, isEmptyRow } from "./enter.ts";
 import {
   handleBackspaceMerge,
   handleBareFieldExit,
@@ -58,6 +58,13 @@ export function createKeyDownHandler(
     if (key === "Enter") {
       e.preventDefault();
       handleEnterKey(row, callbacks);
+      return;
+    }
+
+    // Backspace at start of empty row: remove row (any field, including pending)
+    if (key === "Backspace" && isAtStart(el) && isEmptyRow(row)) {
+      e.preventDefault();
+      callbacks.onRemoveEmptyRow(row);
       return;
     }
 
