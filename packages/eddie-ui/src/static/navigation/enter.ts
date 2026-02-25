@@ -55,7 +55,7 @@ function handleDirectiveEnter(
 
 export function isEmptyRow(row: Element): boolean {
   const fields = row.querySelectorAll<HTMLElement>(
-      '[data-field][contenteditable="true"]',
+    '[data-field][contenteditable="true"]',
   );
   return [...fields].every((el) => (el.textContent ?? "").trim() === "");
 }

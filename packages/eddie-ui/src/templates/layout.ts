@@ -12,6 +12,7 @@ export interface LayoutOptions {
   currentFile?: string | null;
   message?: HtmlString;
   state?: EditorState | null;
+  accounts?: string[];
 }
 
 export function layout(options: LayoutOptions): HtmlString {
@@ -21,10 +22,11 @@ export function layout(options: LayoutOptions): HtmlString {
     currentFile = null,
     message = HtmlString.EMPTY,
     state = null,
+    accounts = [],
   } = options;
   const beancountData: BeancountData | null =
     currentFile != null && state?.type === "success"
-      ? { file: currentFile, model: state.value }
+      ? { file: currentFile, model: state.value, accounts }
       : null;
   const dataScript =
     beancountData != null

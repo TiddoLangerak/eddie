@@ -1,5 +1,9 @@
 import { not } from "./predicates.ts";
 
+export function distinct<T>(arr: T[]): T[] {
+  return [...new Set(arr)];
+}
+
 export function findIndex<T>(
   arr: T[],
   predicate: (item: T) => boolean,

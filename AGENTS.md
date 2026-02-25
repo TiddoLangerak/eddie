@@ -8,6 +8,7 @@
 - **Prefer functional-style iteration** over vanilla `for` loops: use `.map()`, `.filter()`, `.reduce()`, `.find()`, `.some()`, `.every()` etc.
 - **Dependencies:** We do not use third-party dependencies besides TypeScript. Prefer the standard library and in-repo packages; do not add new npm dependencies (e.g. no bundlers, no extra runtimes). When something would require a new dependency, solve it with TypeScript and Node built-ins instead.
 - **General-purpose utilities go in eddie-utils:** When writing reusable helper functions (string manipulation, async utilities, object helpers, etc.), put them in `@tiddo/eddie-utils` rather than in application-specific packages. This keeps utilities discoverable and avoids duplication.
+- **Separate UI components from pure logic:** Keep pure business/suggestion logic (e.g. computing suggestions, validation) in regular modules. Put DOM-heavy or reusable UI pieces (dropdowns, autocomplete UI, etc.) in a `components` folder (e.g. `src/static/components/`). Components wire the pure logic to the DOM and events; they should not contain the core algorithms.
 - **Format using Biome:** Run `npm run format` to format code.
 - **Be conservative with comments:** Comments aren't usually needed. Prefer descriptive naming instead.
 - **Don't explicitly assign `name` on custom errors.** Omit `this.name = "MyError"` in Error subclasses; use `instanceof` or properties to identify errors in tests and call sites.
@@ -26,6 +27,7 @@
 - **Order functions so the file reads top-to-bottom.** Put entry-point or “main” logic at the top of the file; put helper/implementation functions below it. When reading from line 1 downward, the reader should see the high-level flow first and encounter each function’s definition only after seeing where it is called. Do not put helpers at the top and main logic at the bottom.
 - **Disposable resources:** Prefer `await using` for resources that must be closed or torn down (e.g. servers, file handles, connections). Implement `Symbol.asyncDispose` on wrappers when the underlying value doesn't support it. Use a small helper that returns a promise of a disposable so tests and call sites can do `await using x = await withResource(...)` and get automatic cleanup on scope exit.
 - **Only use ES modules.** This also means that script tags need to have `type="module"`.
+- **Exhaustive switch over unions:** When switching on a union type (e.g. discriminated union of directive types), list every variant explicitly and use a `default` clause that is unreachable (e.g. `default: return unreachable(d)`). For variants that need no special handling, add an explicit case that does nothing (or returns a constant) rather than relying on `default`.
 
 ---
 

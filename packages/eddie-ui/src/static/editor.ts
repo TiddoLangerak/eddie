@@ -20,8 +20,9 @@ import type {
   Transaction,
 } from "@tiddo/beancount-types";
 import { beancountFile } from "@tiddo/beancount-types";
-import { isErr, object, string } from "@tiddo/eddie-parry";
+import { array, isErr, object, string } from "@tiddo/eddie-parry";
 import { type PathSegment, setValue } from "@tiddo/eddie-utils/objects";
+import { createAccountAutocomplete } from "./components/accountAutocomplete.ts";
 import {
   createDirectiveRow,
   createPostingRow,
@@ -36,9 +37,14 @@ import { showTypeSelector } from "./navigation/typeSelector.ts";
 export interface BeancountData {
   file: string;
   model: BeancountFile;
+  accounts: string[];
 }
 
-const beancountData = object({ file: string(), model: beancountFile });
+const beancountData = object({
+  file: string(),
+  model: beancountFile,
+  accounts: array(string()),
+});
 
 function getData(): BeancountData | null {
   const el = document.getElementById("beancount-data");
@@ -268,6 +274,30 @@ function initEditor(): void {
   function registerFieldHandlers(el: Element): void {
     el.addEventListener("blur", onBlur);
     el.addEventListener("keydown", handleKeyDown);
+    const fieldName = el.getAttribute("data-field");
+    if (
+      (fieldName === "account" || fieldName === "sourceAccount") &&
+      el instanceof HTMLElement
+    ) {
+      const data = getData();
+      if (data?.accounts?.length) {
+        const instance = createAccountAutocomplete(el, data.accounts, () => {});
+        el.addEventListener(
+          "keydown",
+          (e) => {
+            if (
+              e instanceof KeyboardEvent &&
+              instance.isOpen() &&
+              instance.handleKeyDown(e)
+            ) {
+              e.preventDefault();
+              e.stopPropagation();
+            }
+          },
+          true,
+        );
+      }
+    }
   }
 
   function onCreatePosting(afterRow: Element): HTMLElement | null {

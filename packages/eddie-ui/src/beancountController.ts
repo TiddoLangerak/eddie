@@ -5,6 +5,7 @@ import { formatBeancountFile } from "@tiddo/beancount-formatter";
 import { ParseError, parseBeancount } from "@tiddo/beancount-parser";
 import type { BeancountFile } from "@tiddo/beancount-types";
 import { fileExists } from "@tiddo/eddie-utils/files";
+import { getWorkspaceAccounts } from "./accounts.ts";
 import { HtmlString, html } from "./html.ts";
 import type { HttpResponse } from "./response.ts";
 import type { EditorState } from "./templates/editor.ts";
@@ -75,19 +76,56 @@ export async function handleView(
 ): Promise<ViewResponse> {
   const files = await getWorkspaceFiles(ctx.workspace);
 
-  let content = "";
-  if (file && isValidPath(ctx.workspace, file)) {
-    const fullPath = join(ctx.workspace, file);
-    if (!(await fileExists(fullPath))) {
-      const message = html`<div class="message error">File not found: ${file}</div>`;
-      return {
-        status: 404,
-        content: layout({ workspace: ctx.workspace, files, message }),
-      };
-    }
-    content = await readFile(fullPath, "utf-8");
+  if (!file) {
+    return {
+      status: 200,
+      content: layout({
+        workspace: ctx.workspace,
+        files,
+        currentFile: null,
+        message: HtmlString.EMPTY,
+        state: null,
+        accounts: [],
+      }),
+    };
   }
 
+  if (!isValidPath(ctx.workspace, file)) {
+    const message = html`<div class="message error">Invalid file path</div>`;
+    return {
+      status: 400,
+      content: layout({
+        workspace: ctx.workspace,
+        files,
+        currentFile: file,
+        message,
+        state: null,
+        accounts: [],
+      }),
+    };
+  }
+
+  const fullPath = join(ctx.workspace, file);
+  if (!(await fileExists(fullPath))) {
+    const message = html`<div class="message error">File not found: ${file}</div>`;
+    return {
+      status: 404,
+      content: layout({
+        workspace: ctx.workspace,
+        files,
+        currentFile: file,
+        message,
+        state: null,
+        accounts: [],
+      }),
+    };
+  }
+
+  const accounts = await getWorkspaceAccounts(
+    ctx.workspace,
+    await getBeancountFiles(ctx.workspace),
+  );
+  const content = await readFile(fullPath, "utf-8");
   const state = tryParse(content);
   const message = saved
     ? html`<div class="message success">Saved successfully</div>`
@@ -101,6 +139,7 @@ export async function handleView(
       currentFile: file,
       message,
       state,
+      accounts,
     }),
   };
 }
@@ -123,6 +162,7 @@ export async function handleSave(
         currentFile: null,
         message,
         state,
+        accounts: [],
       }),
       status: 400,
     };
@@ -131,6 +171,10 @@ export async function handleSave(
   if (!isValidPath(ctx.workspace, file)) {
     const message = html`<div class="message error">Invalid file path</div>`;
     const state: EditorState = { type: "success", value: model };
+    const accounts = await getWorkspaceAccounts(
+      ctx.workspace,
+      await getBeancountFiles(ctx.workspace),
+    );
     return {
       html: layout({
         workspace: ctx.workspace,
@@ -138,6 +182,7 @@ export async function handleSave(
         currentFile: file,
         message,
         state,
+        accounts,
       }),
       status: 400,
     };
@@ -153,6 +198,10 @@ export async function handleSave(
       <div class="message error">Save error: ${errorMessage}</div>
     `;
     const state: EditorState = { type: "success", value: model };
+    const accounts = await getWorkspaceAccounts(
+      ctx.workspace,
+      await getBeancountFiles(ctx.workspace),
+    );
     return {
       html: layout({
         workspace: ctx.workspace,
@@ -160,6 +209,7 @@ export async function handleSave(
         currentFile: file,
         message,
         state,
+        accounts,
       }),
       status: 400,
     };
@@ -182,6 +232,7 @@ export async function handleParse(
       currentFile: file || null,
       message,
       state,
+      accounts: [],
     });
   }
 
@@ -195,12 +246,17 @@ export async function handleParse(
 			</div>
 		`
       : HtmlString.EMPTY;
+  const accounts = await getWorkspaceAccounts(
+    ctx.workspace,
+    await getBeancountFiles(ctx.workspace),
+  );
   return layout({
     workspace: ctx.workspace,
     files,
     currentFile: file,
     message,
     state,
+    accounts,
   });
 }
 
@@ -218,12 +274,17 @@ export async function handleFormat(
       <div class="message success">Formatted successfully</div>
     `;
     const state = tryParse(formatted);
+    const accounts = await getWorkspaceAccounts(
+      ctx.workspace,
+      await getBeancountFiles(ctx.workspace),
+    );
     return layout({
       workspace: ctx.workspace,
       files,
       currentFile: file,
       message,
       state,
+      accounts,
     });
   } catch (error: unknown) {
     const errorMessage =
@@ -242,6 +303,7 @@ export async function handleFormat(
       currentFile: file,
       message,
       state,
+      accounts: [],
     });
   }
 }

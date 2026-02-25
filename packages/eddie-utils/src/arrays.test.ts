@@ -1,6 +1,24 @@
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
-import { dropEnd, dropWhile, findIndex, takeWhile } from "./arrays.ts";
+import { distinct, dropEnd, dropWhile, findIndex, takeWhile } from "./arrays.ts";
+
+test("distinct", (t) => {
+  t.test("removes duplicates", () => {
+    assert.deepEqual(distinct([1, 2, 2, 3, 1, 3]), [1, 2, 3]);
+  });
+
+  t.test("preserves order of first occurrence", () => {
+    assert.deepEqual(distinct(["a", "b", "a", "c", "b"]), ["a", "b", "c"]);
+  });
+
+  t.test("returns empty for empty array", () => {
+    assert.deepEqual(distinct([]), []);
+  });
+
+  t.test("returns same array when no duplicates", () => {
+    assert.deepEqual(distinct([1, 2, 3]), [1, 2, 3]);
+  });
+});
 
 test("findIndex", (t) => {
   t.test("returns index of first match", () => {
