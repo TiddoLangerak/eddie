@@ -9,12 +9,12 @@ export default defineConfig({
   reporter: "line",
   timeout: 30000,
   expect: {
-    timeout: 5000,
+    timeout: 500,
   },
   use: {
     baseURL: "http://localhost:3456",
     trace: "on-first-retry",
-    actionTimeout: 10000,
+    actionTimeout: 500,
   },
   projects: [
     {
