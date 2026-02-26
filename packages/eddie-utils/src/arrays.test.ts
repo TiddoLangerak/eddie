@@ -1,6 +1,12 @@
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
-import { distinct, dropEnd, dropWhile, findIndex, takeWhile } from "./arrays.ts";
+import {
+  distinct,
+  dropEnd,
+  dropWhile,
+  findIndex,
+  takeWhile,
+} from "./arrays.ts";
 
 test("distinct", (t) => {
   t.test("removes duplicates", () => {

@@ -20,7 +20,7 @@ function getSegmentCompletions(accounts: string[], query: string): string[] {
     .map((seg) => ({ seg, match: fuzzyMatch(query, seg) }))
     .filter(isMatch)
     .sort(compareScoreThenName)
-    .map((x) => x.seg + ":");
+    .map((x) => `${x.seg}:`);
 }
 
 /** Returns only full account names (no trailing ":"), never segment prefixes. */

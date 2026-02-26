@@ -3,9 +3,9 @@
  * (segment + full) and field behavior (getQuery, apply with focus, reopen on ":").
  */
 
-import { createAutocomplete } from "./autocomplete.ts";
 import { buildSuggestions } from "../accountAutocomplete.ts";
 import { focusAtEnd } from "../navigation/cursor.ts";
+import { createAutocomplete } from "./autocomplete.ts";
 
 export interface AccountAutocompleteInstance {
   destroy: () => void;
