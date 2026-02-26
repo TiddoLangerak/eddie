@@ -56,7 +56,7 @@ function directiveDetailsCell(
       return html`${payeePart}${editableSpan("narration", d.narration)}${tagsPart(d.tags)}${linksPart(d.links)}${pendingSpan()}`;
     }
     case "balance":
-      return html`${editableSpan("account", d.account)}: ${editableSpan("amount-number", d.amount.number)}${editableSpan("amount-commodity", d.amount.commodity)}`;
+      return html`${editableSpan("account", d.account)} ${editableSpan("amount-number", d.amount.number)}${editableSpan("amount-commodity", d.amount.commodity)}`;
     case "open":
       return html`${editableSpan("account", d.account)}`;
     case "close":
