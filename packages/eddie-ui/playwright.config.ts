@@ -1,5 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
+// Need to bind it to process.env, because this file gets evaluated multiple times.
+process.env.PORT = process.env.PORT ?? (20000 + Math.floor(Math.random() * 20000));
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
@@ -12,7 +15,7 @@ export default defineConfig({
     timeout: 500,
   },
   use: {
-    baseURL: "http://localhost:3456",
+    baseURL: `http://localhost:${process.env.PORT}`,
     trace: "on-first-retry",
     actionTimeout: 500,
   },
@@ -28,8 +31,8 @@ export default defineConfig({
   ],
   webServer: {
     command:
-      "mkdir -p e2e/.workspace && node --experimental-strip-types --conditions=development serve.ts --port 3456 --workspace e2e/.workspace",
-    url: "http://localhost:3456",
+      `mkdir -p e2e/.workspace && node --experimental-strip-types --conditions=development serve.ts --port ${process.env.PORT} --workspace e2e/.workspace`,
+    url: `http://localhost:${process.env.PORT}`,
     reuseExistingServer: !process.env.CI,
     timeout: 30000,
   },
