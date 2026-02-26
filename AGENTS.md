@@ -41,6 +41,7 @@
 - **Update AGENTS.md with new learnings.** You are constantly improving yourself, so keep updating AGENTS.md based on patterns encountered in sessions.
 - **When in worktrees, commit changes.** When working in a worktree, commit your changes to a branch while making them.
 - **Run checks when making changes**. We have `npm run checks` for checks without end-to-end tests, and `npm run checks:all` for checks with end-to-end tests. When making changes that may influence the end UI, use `checks:all`.
+- **Running tests:** Always run tests with `nvm use` first. **Unit tests:** `nvm use && npm run test -- <options>`. **E2e tests (Playwright):** `nvm use && npm run test:e2e -- <options>`. Pass any options (e.g. file paths, filters, flags) after `--`.
 - **Use `nvm use && npm run format` to fix formatting issues.** Note that this command changes files, so make sure to refresh your context.
 - **Keep READMEs up-to-date when making changes.** When you change a package’s behavior, API, or scripts, update the relevant README so it stays accurate.
 - **Use squash merges when merging.** Don't use normal merges. Don't use fast-forward merges. Only squash merges.
