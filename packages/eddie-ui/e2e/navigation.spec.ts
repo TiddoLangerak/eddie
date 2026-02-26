@@ -689,10 +689,10 @@ test.describe("Enter key creates new rows", () => {
     );
 
     const row = getPostingRow(page, { directive: 0, posting: 0 });
-    const account = getField(row, "account");
+    const commodity = getField(row, "amount-commodity");
 
-    await focusFieldAtEnd(account);
-    await account.press("Enter");
+    await focusFieldAtEnd(commodity);
+    await commodity.press("Enter");
 
     const newRow = getPostingRow(page, { directive: 0, posting: 1 });
     await expect(newRow).toBeVisible();
@@ -744,9 +744,9 @@ test.describe("Enter key creates new rows", () => {
 
     // First create a new posting via Enter
     const existingRow = getPostingRow(page, { directive: 0, posting: 0 });
-    const existingAccount = getField(existingRow, "account");
-    await focusFieldAtEnd(existingAccount);
-    await existingAccount.press("Enter");
+    const existingCommodity = getField(existingRow, "amount-commodity");
+    await focusFieldAtEnd(existingCommodity);
+    await existingCommodity.press("Enter");
 
     // Now we have an empty posting at index 1
     const emptyRow = getPostingRow(page, { directive: 0, posting: 1 });
@@ -783,10 +783,10 @@ test.describe("Enter key creates new rows", () => {
     );
 
     const row = getRow(page, 0).first();
-    const account = getField(row, "account");
+    const commodity = getField(row, "amount-commodity");
 
-    await focusFieldAtEnd(account);
-    await account.press("Enter");
+    await focusFieldAtEnd(commodity);
+    await commodity.press("Enter");
 
     // Dropdown should be visible
     const dropdown = page.locator(".dropdown");
@@ -811,10 +811,10 @@ test.describe("Enter key creates new rows", () => {
     );
 
     const row = getRow(page, 0).first();
-    const account = getField(row, "account");
+    const commodity = getField(row, "amount-commodity");
 
-    await focusFieldAtEnd(account);
-    await account.press("Enter");
+    await focusFieldAtEnd(commodity);
+    await commodity.press("Enter");
 
     // Select transaction type
     const dropdown = page.locator(".dropdown");
