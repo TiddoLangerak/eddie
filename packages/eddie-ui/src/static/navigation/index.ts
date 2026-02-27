@@ -17,7 +17,7 @@
  */
 
 import { getSchema } from "../fieldSchema.ts";
-import { isAtEnd, isAtStart } from "./cursor.ts";
+import { isAtEnd, isAtStart, hasSelection } from "./cursor.ts";
 import { getRowType } from "./dom.ts";
 import { handleEnterKey, isEmptyRow } from "./enter.ts";
 import {
@@ -62,7 +62,12 @@ export function createKeyDownHandler(
     }
 
     // Backspace at start of empty row: remove row (any field, including pending)
-    if (key === "Backspace" && isAtStart(el) && isEmptyRow(row)) {
+    if (
+      key === "Backspace" &&
+      isAtStart(el) &&
+      !hasSelection(el) &&
+      isEmptyRow(row)
+    ) {
       e.preventDefault();
       callbacks.onRemoveEmptyRow(row);
       return;
@@ -87,14 +92,14 @@ export function createKeyDownHandler(
       return;
     }
 
-    if (key === "ArrowLeft" && isAtStart(el)) {
+    if (key === "ArrowLeft" && isAtStart(el) && !hasSelection(el)) {
       e.preventDefault();
       moveToPrevField(row, schema, group, groupIndex, fieldIndex);
       return;
     }
 
-    // Backspace at start: merge with previous field
-    if (key === "Backspace" && isAtStart(el)) {
+    // Backspace at start: merge with previous field (only when no selection)
+    if (key === "Backspace" && isAtStart(el) && !hasSelection(el)) {
       if (
         handleBackspaceMerge(e, el, row, schema, group, groupIndex, fieldIndex)
       ) {

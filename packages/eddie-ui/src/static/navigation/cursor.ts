@@ -25,6 +25,21 @@ export function isAtStart(el: HTMLElement): boolean {
   return getCaretPosition(el) === 0;
 }
 
+/**
+ * True when the user has a non-collapsed selection that involves el.
+ * "Involves" means the selection start or end is inside el (so we must not
+ * run merge/exit logic and must let the browser delete the selection).
+ */
+export function hasSelection(el: HTMLElement): boolean {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0) return false;
+  if (selection.isCollapsed) return false;
+  const range = selection.getRangeAt(0);
+  return (
+    el.contains(range.startContainer) || el.contains(range.endContainer)
+  );
+}
+
 export function isEmpty(el: HTMLElement): boolean {
   const text = el.textContent ?? "";
   return text.trim().length === 0;

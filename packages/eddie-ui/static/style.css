@@ -492,6 +492,26 @@ button:hover {
   margin-left: 1ch;
 }
 
+/*
+ * Fix for FF bug.
+ * In firefox, when:
+ * - We select the full text of the span before pending
+ * - Pending is empty
+ * - We press backspace
+ * Then:
+ * - Nothing happens...
+ *
+ * By adding some content in the pending block this is fixed.
+ * Unfortunately, it needs to take up actual space, otherwise it's not working.
+ * So, we use a 1px hidden thing, and that seems to be enough.
+ */
+[data-field="pending"]::after {
+  content: " ";
+  visibility: hidden;
+  width: 1px;
+  display: inline-block;
+}
+
 /* Payee followed by narration gets em-dash */
 [data-field="payee"] + [data-field="narration"]::before {
   content: "— ";

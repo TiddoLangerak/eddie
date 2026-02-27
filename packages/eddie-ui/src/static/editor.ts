@@ -23,6 +23,7 @@ import { beancountFile } from "@tiddo/beancount-types";
 import { array, isErr, object, string } from "@tiddo/eddie-parry";
 import { type PathSegment, setValue } from "@tiddo/eddie-utils/objects";
 import { createAccountAutocomplete } from "./components/accountAutocomplete.ts";
+import { getSchema } from "./fieldSchema.ts";
 import {
   createDirectiveRow,
   createPostingRow,
@@ -31,6 +32,10 @@ import {
   renumberPostingIndices,
 } from "./navigation/dom.ts";
 import { findParentDirectiveRow, isEmptyRow } from "./navigation/enter.ts";
+import {
+  applyBlurEmptyFieldCleanup,
+  type BlurCleanupResult,
+} from "./navigation/handlers.ts";
 import { createKeyDownHandler } from "./navigation/index.ts";
 import { showTypeSelector } from "./navigation/typeSelector.ts";
 
@@ -264,11 +269,48 @@ function initEditor(): void {
       postingIndex != null ? findPosting(directive, postingIndex) : directive;
     if (target == null) return;
 
-    const path = fieldPath(field);
     const value = (el.textContent ?? "").trim();
-    setValue(target as unknown as Record<string, unknown>, path, value);
+    const rowType = getRowType(row);
+    const schema = rowType ? getSchema(rowType) : undefined;
+    const cleanup: BlurCleanupResult | null =
+      schema != null
+        ? applyBlurEmptyFieldCleanup(e, el, row, schema)
+        : null;
+
+    if (cleanup) {
+      applyBlurCleanupToModel(
+        target as unknown as Record<string, unknown>,
+        field,
+        value,
+        cleanup,
+      );
+    } else {
+      setValue(target as unknown as Record<string, unknown>, fieldPath(field), value);
+    }
 
     onRemoveEmptyRow(row);
+  }
+
+  function applyBlurCleanupToModel(
+    target: Record<string, unknown>,
+    blurredField: string,
+    blurredValue: string,
+    cleanup: BlurCleanupResult,
+  ): void {
+    const { removed, mergedInto } = cleanup;
+    for (const name of removed) {
+      setValue(target, fieldPath(name), "");
+    }
+    if (mergedInto) {
+      setValue(target, fieldPath(mergedInto.field), mergedInto.value);
+    }
+    if (!removed.includes(blurredField)) {
+      const value =
+        mergedInto?.field === blurredField
+          ? mergedInto.value
+          : blurredValue;
+      setValue(target, fieldPath(blurredField), value);
+    }
   }
 
   function registerFieldHandlers(el: Element): void {

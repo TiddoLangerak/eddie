@@ -87,6 +87,12 @@ export async function focusFieldAtStart(field: Locator): Promise<void> {
   });
 }
 
+/** Focus the field and select all of its content (for testing backspace-to-delete). */
+export async function selectAllInField(field: Locator): Promise<void> {
+  await field.focus();
+  await field.press("Control+A");
+}
+
 export async function typeInField(field: Locator, text: string): Promise<void> {
   await field.pressSequentially(text);
 }

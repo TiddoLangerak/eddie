@@ -12,12 +12,126 @@ import {
 } from "./dom.ts";
 import { moveToPending } from "./pending.ts";
 import {
+  findCurrentFieldInSchema,
   findNextFieldInGroup,
   getFirstFieldOfGroup,
   getLastFieldOfGroup,
   hasRequiredBareNextField,
   isFieldGroup,
 } from "./schema.ts";
+
+/**
+ * Result of applying blur cleanup: which fields were removed from the DOM and
+ * any merge (e.g. payee → narration) so the editor can sync the model.
+ */
+export interface BlurCleanupResult {
+  removed: string[];
+  mergedInto?: { field: string; value: string };
+}
+
+/**
+ * Merge the first field (e.g. payee) into the second (e.g. narration) in an
+ * ambiguous-freetext group. Updates DOM and returns the element to focus and
+ * cursor position. Used by both backspace and blur cleanup.
+ */
+function mergeFirstIntoSecondInAmbiguousFreetext(
+  secondEl: HTMLElement,
+  row: Element,
+  group: Extract<GroupSpec, { kind: "ambiguous-freetext" }>,
+  currentText: string,
+): { into: HTMLElement; insertPos: number } | null {
+  const firstEl = findFieldElement(row, group.fields.first);
+  if (!firstEl) return null;
+  const firstText = (firstEl.textContent ?? "").trim();
+  secondEl.textContent = firstText + currentText;
+  firstEl.remove();
+  return { into: secondEl, insertPos: firstText.length };
+}
+
+/**
+ * Merge current field into the previous field. Updates DOM and returns the
+ * insert position for the previous element. Used by both backspace and blur.
+ */
+function mergeIntoPreviousField(
+  el: HTMLElement,
+  prevEl: HTMLElement,
+  currentText: string,
+): number {
+  const prevText = (prevEl.textContent ?? "").trim();
+  const insertPos = prevText.length;
+  prevEl.textContent = prevText + currentText;
+  el.remove();
+  return insertPos;
+}
+
+/**
+ * When blurring an empty field, apply the same removal/merge as backspace:
+ * remove empty optional fields and merge payee/narration when one is empty.
+ * Caller must sync the model from this result and then run onRemoveEmptyRow.
+ */
+export function applyBlurEmptyFieldCleanup(
+  e: Event,
+  el: HTMLElement,
+  row: Element,
+  schema: RowSchema,
+): BlurCleanupResult | null {
+  const currentText = (el.textContent ?? "").trim();
+  if (currentText !== "") return null;
+
+  const currentFieldName = el.dataset.field;
+  if (!currentFieldName) return null;
+
+  const found = findCurrentFieldInSchema(schema, currentFieldName);
+  if (!found) return null;
+
+  const { group, groupIndex, fieldIndex } = found;
+
+  if (group.kind === "ambiguous-freetext") {
+    if (currentFieldName === group.fields.first) {
+      const narrationEl = findFieldElement(row, group.fields.second);
+      el.remove();
+      return { removed: [group.fields.first] };
+    }
+    if (currentFieldName === group.fields.second) {
+      const result = mergeFirstIntoSecondInAmbiguousFreetext(
+        el,
+        row,
+        group,
+        currentText,
+      );
+      if (result) {
+        const merged = (result.into.textContent ?? "").trim();
+        return {
+          removed: [group.fields.first],
+          mergedInto: { field: group.fields.second, value: merged },
+        };
+      }
+    }
+    return null;
+  }
+
+  const prevEl = findPreviousFieldForMerge(
+    el,
+    row,
+    schema,
+    group,
+    groupIndex,
+    fieldIndex,
+  );
+
+  if (prevEl) {
+    const insertPos = mergeIntoPreviousField(el, prevEl, currentText);
+    focusAtPosition(prevEl, insertPos);
+    return { removed: [currentFieldName] };
+  }
+
+  if (isFieldGroup(group) && group.optional) {
+    el.remove();
+    return { removed: [currentFieldName] };
+  }
+
+  return null;
+}
 
 export function handleBackspaceMerge(
   e: KeyboardEvent,
@@ -31,40 +145,33 @@ export function handleBackspaceMerge(
   const currentText = (el.textContent ?? "").trim();
   const currentFieldName = el.dataset.field;
 
-  // Special handling for ambiguous-freetext (payee/narration)
-  // When backspacing from narration into payee, merge into narration (not payee)
-  // because narration is the required field
   if (group.kind === "ambiguous-freetext") {
     if (currentFieldName === group.fields.second) {
-      const firstEl = findFieldElement(row, group.fields.first);
-      if (firstEl) {
+      const result = mergeFirstIntoSecondInAmbiguousFreetext(
+        el,
+        row,
+        group,
+        currentText,
+      );
+      if (result) {
         e.preventDefault();
-        const firstText = firstEl.textContent ?? "";
-        const insertPos = firstText.length;
-        // Merge: payee content + narration content → narration
-        el.textContent = firstText + currentText;
-        firstEl.remove();
-        focusAtPosition(el, insertPos);
+        focusAtPosition(result.into, result.insertPos);
         return true;
       }
     }
   }
 
-  // When at first field of a multi-field group, move entire group content to pending
   if (isFieldGroup(group) && fieldIndex === 0 && group.fields.length > 1) {
     const pending = findPendingField(row);
     if (pending) {
       e.preventDefault();
-      // Collect all content from group fields
       const groupContent = group.fields
         .map((f) => (findFieldElement(row, f.name)?.textContent ?? "").trim())
         .filter((t) => t.length > 0)
         .join(" ");
-      // Remove all fields in the group
       for (const field of group.fields) {
         findFieldElement(row, field.name)?.remove();
       }
-      // Move content to pending
       const pendingText = pending.textContent ?? "";
       pending.textContent = groupContent + pendingText;
       focusAtStart(pending);
@@ -72,7 +179,6 @@ export function handleBackspaceMerge(
     }
   }
 
-  // Find the previous field to merge into
   const prevEl = findPreviousFieldForMerge(
     el,
     row,
@@ -84,15 +190,11 @@ export function handleBackspaceMerge(
 
   if (prevEl) {
     e.preventDefault();
-    const prevText = prevEl.textContent ?? "";
-    const insertPos = prevText.length;
-    prevEl.textContent = prevText + currentText;
-    el.remove();
+    const insertPos = mergeIntoPreviousField(el, prevEl, currentText);
     focusAtPosition(prevEl, insertPos);
     return true;
   }
 
-  // No previous field found - don't handle (let default behavior occur)
   return false;
 }
 

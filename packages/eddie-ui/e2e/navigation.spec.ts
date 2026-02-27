@@ -11,6 +11,7 @@ import {
   getPostingRow,
   getRow,
   loadTestFileContent,
+  selectAllInField,
   typeInField,
 } from "./helpers.ts";
 
@@ -689,10 +690,10 @@ test.describe("Enter key creates new rows", () => {
     );
 
     const row = getPostingRow(page, { directive: 0, posting: 0 });
-    const commodity = getField(row, "amount-commodity");
+    const account = getField(row, "account");
 
-    await focusFieldAtEnd(commodity);
-    await commodity.press("Enter");
+    await focusFieldAtEnd(account);
+    await account.press("Enter");
 
     const newRow = getPostingRow(page, { directive: 0, posting: 1 });
     await expect(newRow).toBeVisible();
@@ -744,9 +745,9 @@ test.describe("Enter key creates new rows", () => {
 
     // First create a new posting via Enter
     const existingRow = getPostingRow(page, { directive: 0, posting: 0 });
-    const existingCommodity = getField(existingRow, "amount-commodity");
-    await focusFieldAtEnd(existingCommodity);
-    await existingCommodity.press("Enter");
+    const existingAccount = getField(existingRow, "account");
+    await focusFieldAtEnd(existingAccount);
+    await existingAccount.press("Enter");
 
     // Now we have an empty posting at index 1
     const emptyRow = getPostingRow(page, { directive: 0, posting: 1 });
@@ -783,10 +784,10 @@ test.describe("Enter key creates new rows", () => {
     );
 
     const row = getRow(page, 0).first();
-    const commodity = getField(row, "amount-commodity");
+    const account = getField(row, "account");
 
-    await focusFieldAtEnd(commodity);
-    await commodity.press("Enter");
+    await focusFieldAtEnd(account);
+    await account.press("Enter");
 
     // Dropdown should be visible
     const dropdown = page.locator(".dropdown");
@@ -811,10 +812,10 @@ test.describe("Enter key creates new rows", () => {
     );
 
     const row = getRow(page, 0).first();
-    const commodity = getField(row, "amount-commodity");
+    const account = getField(row, "account");
 
-    await focusFieldAtEnd(commodity);
-    await commodity.press("Enter");
+    await focusFieldAtEnd(account);
+    await account.press("Enter");
 
     // Select transaction type
     const dropdown = page.locator(".dropdown");
@@ -1104,6 +1105,76 @@ test.describe("Backspace behavior", () => {
     const tags = getFieldStartingWith(row, "tags");
     await expect(tags).toHaveCount(0);
     await expectFieldText(narration, "Testmy-tag");
+  });
+
+  test("backspace with selection deletes selection and does not merge", async ({
+    page,
+  }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "Payee" "Narration"
+        Assets:Checking  100.00 USD
+      `,
+    );
+
+    const row = getRow(page, 0).first();
+    const narration = getField(row, "narration");
+
+    await selectAllInField(narration);
+    await narration.press("Backspace");
+
+    // Selected text should be deleted; field should stay and be empty (no merge)
+    await expectFieldText(narration, "");
+    await expectFocused(narration);
+    await expect(getField(row, "payee")).toHaveCount(1);
+    await expectFieldText(getField(row, "payee"), "Payee");
+  });
+
+  test("select full narration and backspace clears narration only", async ({
+    page,
+  }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "The Payee" "The Narration"
+        Assets:Checking  100.00 USD
+      `,
+    );
+
+    const row = getRow(page, 0).first();
+    const payee = getField(row, "payee");
+    const narration = getField(row, "narration");
+
+    await selectAllInField(narration);
+    await narration.press("Backspace");
+
+    await expectFieldText(narration, "");
+    await expectFocused(narration);
+    await expectFieldText(payee, "The Payee");
+  });
+
+  test("select full payee and backspace clears payee only", async ({
+    page,
+  }) => {
+    await using _file = await loadTestFileContent(
+      page,
+      `
+      2024-01-15 * "The Payee" "The Narration"
+        Assets:Checking  100.00 USD
+      `,
+    );
+
+    const row = getRow(page, 0).first();
+    const payee = getField(row, "payee");
+    const narration = getField(row, "narration");
+
+    await selectAllInField(payee);
+    await payee.press("Backspace");
+
+    await expectFieldText(payee, "");
+    await expectFocused(payee);
+    await expectFieldText(narration, "The Narration");
   });
 });
 
